@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(name = "DAPsWrapperProxy", url = "placeholder")
-public interface DAPsWrapperProxy {
+@FeignClient(name = "PortalProxy", url = "placeholder")
+public interface PortalProxy {
 
 	@PostMapping
 	KeycloakTokenResponse readAuthToken(URI url, @RequestBody MultiValueMap<String, Object> body);
