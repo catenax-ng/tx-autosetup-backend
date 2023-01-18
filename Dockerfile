@@ -18,24 +18,19 @@
 #* SPDX-License-Identifier: Apache-2.0
 #********************************************************************************/
 
-#FROM openjdk:19-jdk-alpine3.16
-FROM maven:3.8.5-openjdk-18-slim as build
+FROM maven:3.8.5-openjdk-18-slim 
 
 RUN apt-get update -y && apt-get install -y nocache
-#RUN  && apk add --upgrade openssl
+
 WORKDIR /app
 
-# our final base image
-#FROM eclipse-temurin:18.0.1_10-jre
-FROM eclipse-temurin:19_36-jre
+COPY ./pom.xml /pom.xml
 
 COPY . /app
 
 RUN mvn clean install -Dmaven.test.skip=true 
 
 WORKDIR target
-
-#RUN mv kubeapps-wrapper-0.0.1.jar orchestrator-service.jar 
 
 ENTRYPOINT ["java","-jar","auto-setup-0.0.1.jar"]
 
