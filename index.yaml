@@ -3,17 +3,39 @@ entries:
   autosetup:
   - apiVersion: v2
     appVersion: 1.1.0
-    created: "2023-01-29T00:58:47.383315+05:30"
+    created: "2023-01-29T01:10:23.760951+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
       repository: https://charts.bitnami.com/bitnami
       version: 11.x.x
     description: A Helm chart for Kubernetes
-    digest: 33aa77ff02ed6a19d77ed190de4cc16155efb11e4773cda882a8bce9334aefaf
+    digest: 3e29f646d4b1f08f1c4ca998af0218e7f7708a02d8caad729bcd953af1b4107f
     name: autosetup
     type: application
     urls:
     - https://catenax-ng.github.io/orchestrator/autosetup-1.1.1.tgz
     version: 1.1.1
-generated: "2023-01-29T00:58:47.378591+05:30"
+  dftbackend:
+  - apiVersion: v2
+    appVersion: 1.4.6
+    created: "2023-01-29T01:10:23.76152+05:30"
+    description: A Helm chart for Kubernetes
+    digest: 9f547d5bb79648e800e638dddd98dd6fa0ce48518f474c6cebdd3fca5a773139
+    name: dftbackend
+    type: application
+    urls:
+    - https://catenax-ng.github.io/orchestrator/dftbackend-1.4.6.tgz
+    version: 1.4.6
+  dftfrontend:
+  - apiVersion: v2
+    appVersion: 1.4.7
+    created: "2023-01-29T01:10:23.763624+05:30"
+    description: A Helm chart for Kubernetes
+    digest: 98bf71d787cf9cade869b3794cfd83f31b7404a2207a4ef206379440c76e8940
+    name: dftfrontend
+    type: application
+    urls:
+    - https://catenax-ng.github.io/orchestrator/dftfrontend-1.4.7.tgz
+    version: 1.4.7
+generated: "2023-01-29T01:10:23.757248+05:30"
