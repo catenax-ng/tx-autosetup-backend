@@ -41,6 +41,8 @@ serviceAccount:
   name: ""
 podAnnotations: {}
 
+portContainer: 9999
+
 podSecurityContext:
   #fsGroup: 2000
   
