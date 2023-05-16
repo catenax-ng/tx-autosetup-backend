@@ -3,7 +3,7 @@ entries:
   autosetup:
   - apiVersion: v2
     appVersion: 1.2.6
-    created: "2023-05-16T15:03:34.77063+05:30"
+    created: "2023-05-16T15:18:22.127852+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -21,7 +21,7 @@ entries:
     version: 1.2.6
   - apiVersion: v2
     appVersion: 1.2.5
-    created: "2023-05-16T15:03:34.767559+05:30"
+    created: "2023-05-16T15:18:22.124794+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -39,7 +39,7 @@ entries:
     version: 1.2.5
   - apiVersion: v2
     appVersion: 1.2.4
-    created: "2023-05-16T15:03:34.764534+05:30"
+    created: "2023-05-16T15:18:22.120305+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -57,7 +57,7 @@ entries:
     version: 1.2.4
   - apiVersion: v2
     appVersion: 1.2.3
-    created: "2023-05-16T15:03:34.760457+05:30"
+    created: "2023-05-16T15:18:22.11669+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -75,7 +75,7 @@ entries:
     version: 1.2.3
   - apiVersion: v2
     appVersion: 1.2.2
-    created: "2023-05-16T15:03:34.757289+05:30"
+    created: "2023-05-16T15:18:22.112104+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -93,7 +93,7 @@ entries:
     version: 1.2.2
   - apiVersion: v2
     appVersion: 1.2.1
-    created: "2023-05-16T15:03:34.753553+05:30"
+    created: "2023-05-16T15:18:22.105372+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -111,7 +111,7 @@ entries:
     version: 1.2.1
   - apiVersion: v2
     appVersion: 1.2.0
-    created: "2023-05-16T15:03:34.750156+05:30"
+    created: "2023-05-16T15:18:22.098644+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -129,7 +129,7 @@ entries:
     version: 1.2.0
   - apiVersion: v2
     appVersion: 1.1.5
-    created: "2023-05-16T15:03:34.746265+05:30"
+    created: "2023-05-16T15:18:22.091153+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -146,7 +146,7 @@ entries:
     version: 1.1.5
   - apiVersion: v2
     appVersion: 1.1.4
-    created: "2023-05-16T15:03:34.742862+05:30"
+    created: "2023-05-16T15:18:22.0847+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -161,7 +161,7 @@ entries:
     version: 1.1.4
   - apiVersion: v2
     appVersion: 0.0.8
-    created: "2023-05-16T15:03:34.738061+05:30"
+    created: "2023-05-16T15:18:22.075605+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -174,4 +174,4 @@ entries:
     urls:
     - https://catenax-ng.github.io/tx-autosetup-backend/autosetup-1.1.3.tgz
     version: 1.1.3
-generated: "2023-05-16T15:03:34.733633+05:30"
+generated: "2023-05-16T15:18:22.067393+05:30"
