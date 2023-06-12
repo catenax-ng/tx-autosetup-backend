@@ -44,12 +44,11 @@ podAnnotations: {}
 portContainer: 9999
 
 podSecurityContext:
-  fsGroup: 2000
+  #fsGroup: 2000
   
 securityContext:
     # -- Controls whether a process can gain more privilege
   allowPrivilegeEscalation: false
-  runAsUser: 1000
 probe:
   endpoint: "/api/healthz"
   
@@ -63,7 +62,7 @@ service:
   
 ingress:
     # -- If you want to enable or disable the ingress
-  enabled: false
+  enabled: true
     # -- a reference to an Ingress Class resource that contains additional configuration including the name of the controller that should implement the class
   className: nginx
     # -- Annotations to add to the ingress
@@ -79,14 +78,14 @@ ingress:
 resources:
   limits:
     # -- set a maximum amount of allows CPU utilization by specifying a limit on the container.
-    cpu: 600m
+    cpu: 800m
     # -- set a maximum amount of allows memory utilization by specifying a limit on the container.
     memory: 2Gi
   requests:
     # -- sets the minimum amount of CPU required for the container
-    cpu: 600m
+    cpu: 300m
     # -- set a minimum amount of allows memory utilization by specifying a limit on the container.
-    memory: 2Gi
+    memory: 1Gi
     
 autoscaling:
   enabled: false
@@ -131,5 +130,5 @@ postgresql:
     database: "orchdb"
     existingSecret: "autosetup-int-secret"
     secretKeys:
-      adminPasswordKey: "postgres-password"
-      userPasswordKey: "password"
+        adminPasswordKey: "postgres-password"
+        userPasswordKey: "password"

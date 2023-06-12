@@ -7,56 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
  - NA
 
-## [1.2.8] - 2023-05-31
-
-### Fixed
- - Fixed spring core security issue
- 
-### Changed
- - Changed name of repository
-
-## [1.2.7] - 2023-05-16
-
-### Added
- - Added header to the files
- 
-### Changed
- - Changed default ingress to false
- 
-## [1.2.6] - 2023-05-10
-
-### Added
- - Added .tractusx file
- 
-### Fixed
- - Veracode security issue fixes
- - Fixed DEPENDENCIES file issue
- - Specified runAsUser for securitycontext of container
- - Specified base image in Readme
-
-## [1.2.5] - 2023-04-21
-
-### Added
- - Added changes related to digital twin registry
- - Validate input request attribute
-
-### Changed
- - Upgrade spring expression to 6.0.8 version
- - Spring boot upgraded to 3.0.5
-
-### Fixed
- - Fixed for cross site scripting
- - Veracode issue fix
-
-## [1.2.4] - 2023-04-20
-
-### Added
- - Support Digital Twin registry in Autosetup
-
-### Changed
- - Arc 42 update for E2E Data exchange test service integration
-
-
 ## [1.2.3] - 2023-04-07
 
 ### Fixed

@@ -1,0 +1,22 @@
+apiVersion: v1
+entries:
+  autosetup:
+  - apiVersion: v2
+    appVersion: 1.2.3
+    created: "2023-06-12T16:24:06.400578+05:30"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.x.x
+    description: This service will help service provider to set up DFT/SDE with EDC
+      and EDC as service in service provider environment.
+    digest: 9d5aea7ea048274f586a050e090ca51cb30839d6850b9120af419a1f4e95cc15
+    name: autosetup
+    sources:
+    - https://github.com/eclipse-tractusx/autosetup-backend
+    type: application
+    urls:
+    - https://catenax-ng.github.io/tx-managed-service-orchestrator/autosetup-1.2.3.tgz
+    version: 1.2.3
+generated: "2023-06-12T16:24:06.396921+05:30"

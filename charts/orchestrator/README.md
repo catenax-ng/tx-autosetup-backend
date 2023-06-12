@@ -1,12 +1,12 @@
 # autosetup
 
-![Version: 1.2.8](https://img.shields.io/badge/Version-1.2.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.2.8](https://img.shields.io/badge/AppVersion-1.2.8-informational?style=flat-square)
+![Version: 1.2.3](https://img.shields.io/badge/Version-1.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.2.3](https://img.shields.io/badge/AppVersion-1.2.3-informational?style=flat-square)
 
 This service will help service provider to set up DFT/SDE with EDC and EDC as service in service provider environment.
 
 ## Source Code
 
-* <https://github.com/eclipse-tractusx/managed-service-orchestrator>
+* <https://github.com/eclipse-tractusx/autosetup-backend>
 
 ## Requirements
 
@@ -29,7 +29,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{"cert-manager.io/cluster-issuer":"letsencrypt-prod","nginx.ingress.kubernetes.io/affinity":"cookie","nginx.ingress.kubernetes.io/backend-protocol":"HTTP","nginx.ingress.kubernetes.io/session-cookie-max-age":"172800"}` | Annotations to add to the ingress |
 | ingress.className | string | `"nginx"` | a reference to an Ingress Class resource that contains additional configuration including the name of the controller that should implement the class |
-| ingress.enabled | bool | `false` | If you want to enable or disable the ingress |
+| ingress.enabled | bool | `true` | If you want to enable or disable the ingress |
 | ingress.host | string | `""` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `60` |  |
@@ -38,7 +38,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | livenessProbe.timeoutSeconds | int | `1` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
-| podSecurityContext.fsGroup | int | `2000` |  |
+| podSecurityContext | string | `nil` |  |
 | portContainer | int | `9999` |  |
 | postgresql.auth.database | string | `"orchdb"` |  |
 | postgresql.auth.existingSecret | string | `"autosetup-int-secret"` |  |
@@ -54,13 +54,12 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | readinessProbe.successThreshold | int | `1` |  |
 | readinessProbe.timeoutSeconds | int | `1` |  |
 | replicaCount | int | `1` | Number of Replicas for pods |
-| resources.limits.cpu | string | `"600m"` | set a maximum amount of allows CPU utilization by specifying a limit on the container. |
+| resources.limits.cpu | string | `"800m"` | set a maximum amount of allows CPU utilization by specifying a limit on the container. |
 | resources.limits.memory | string | `"2Gi"` | set a maximum amount of allows memory utilization by specifying a limit on the container. |
-| resources.requests.cpu | string | `"600m"` | sets the minimum amount of CPU required for the container |
-| resources.requests.memory | string | `"2Gi"` | set a minimum amount of allows memory utilization by specifying a limit on the container. |
+| resources.requests.cpu | string | `"300m"` | sets the minimum amount of CPU required for the container |
+| resources.requests.memory | string | `"1Gi"` | set a minimum amount of allows memory utilization by specifying a limit on the container. |
 | secretRef | string | `"autosetup-int-secret"` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` | Controls whether a process can gain more privilege |
-| securityContext.runAsUser | int | `1000` |  |
 | service.port | int | `9999` | Port details for sevice |
 | service.portContainer | int | `9999` | Container Port details for sevice |
 | service.type | string | `"ClusterIP"` | Type of service |
