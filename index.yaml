@@ -3,7 +3,7 @@ entries:
   autosetup:
   - apiVersion: v2
     appVersion: 1.3.1
-    created: "2023-06-28T16:55:38.30225+05:30"
+    created: "2023-06-28T17:36:44.452334+05:30"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -11,7 +11,7 @@ entries:
       version: 11.x.x
     description: This service will help service provider to set up DFT/SDE with EDC
       and EDC as service in service provider environment.
-    digest: fe9184e03d526c46a19f7cce45554be7717577447826c31f01a9f9d56fbe2686
+    digest: 41ce6ecf67028cd067f3647eb2362839cdc689aba439ef36da0ed0177aebb80a
     name: autosetup
     sources:
     - https://github.com/eclipse-tractusx/managed-service-orchestrator
@@ -19,4 +19,4 @@ entries:
     urls:
     - https://catenax-ng.github.io/tx-managed-service-orchestrator/autosetup-1.3.1.tgz
     version: 1.3.1
-generated: "2023-06-28T16:55:38.298047+05:30"
+generated: "2023-06-28T17:36:44.445324+05:30"
