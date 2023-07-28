@@ -59,6 +59,9 @@ public class EDCConnectorWorkFlow {
 
 	@Value("${manual.update:false}")
 	private boolean manualUpdate;
+	
+	@Value("${manual.connector.registration:false}")
+	private boolean manualConnectorRegistration;
 
 	public Map<String, String> getWorkFlow(Customer customerDetails, SelectedTools tool, AppActions workflowAction,
 			Map<String, String> inputConfiguration, AutoSetupTriggerEntry triger) {
@@ -72,8 +75,10 @@ public class EDCConnectorWorkFlow {
 		inputConfiguration.putAll(vaultManager.uploadKeyandValues(customerDetails, tool, inputConfiguration, triger));
 		inputConfiguration.putAll(tractusConnectorManager.managePackage(customerDetails, workflowAction, tool,
 				inputConfiguration, triger));
-		inputConfiguration.putAll(
-				connectorRegistrationManager.registerConnector(customerDetails, tool, inputConfiguration, triger));
+		
+		if (!manualConnectorRegistration)
+			inputConfiguration.putAll(
+					connectorRegistrationManager.registerConnector(customerDetails, tool, inputConfiguration, triger));
 
 		try {
 			if (!manualUpdate)
