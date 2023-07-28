@@ -53,6 +53,9 @@ public class SDEManager {
 
 	@Value("${managed.dt-registry:true}")
 	private boolean managedDtRegistry;
+	
+	@Value("${manual.update:false}")
+	private boolean manualUpdate;
 
 	private final SDEConfigurationProperty sDEConfigurationProperty;
 
@@ -82,13 +85,16 @@ public class SDEManager {
 
 			inputData.put("sde.digital-twins.authentication.url",
 					sDEConfigurationProperty.getDigitalTwinsAuthenticationUrl());
-			inputData.put("digital-twins.authentication.clientId", inputData.get("keycloakAuthenticationClientId"));
-			inputData.put("digital-twins.authentication.clientSecret",
-					inputData.get("keycloakAuthenticationClientSecret"));
+			
+			if (!manualUpdate) {
+				inputData.put("digital-twins.authentication.clientId", inputData.get("keycloakAuthenticationClientId"));
+				inputData.put("digital-twins.authentication.clientSecret",
+						inputData.get("keycloakAuthenticationClientSecret"));
 
-			inputData.put("dftbackendkeycloakclientid", inputData.get("keycloakResourceClient"));
-			inputData.put("dftfrontendkeycloakclientid", inputData.get("keycloakResourceClient"));
-
+				inputData.put("dftbackendkeycloakclientid", inputData.get("keycloakResourceClient"));
+				inputData.put("dftfrontendkeycloakclientid", inputData.get("keycloakResourceClient"));
+			}
+			
 			if (managedDtRegistry) {
 				inputData.put("sde.digital-twins.hostname", inputData.get("dtregistryUrl"));
 			} else {
