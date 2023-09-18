@@ -31,4 +31,6 @@ public enum AppNameConstant {
 	
 	DT_REGISTRY,
 	
+	STORAGE_MEDIA
+	
 }

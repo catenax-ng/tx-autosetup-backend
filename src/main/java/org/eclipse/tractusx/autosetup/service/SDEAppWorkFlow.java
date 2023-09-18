@@ -21,15 +21,18 @@
 package org.eclipse.tractusx.autosetup.service;
 
 import static org.eclipse.tractusx.autosetup.constant.AppNameConstant.SDE;
+import static org.eclipse.tractusx.autosetup.constant.AppNameConstant.STORAGE_MEDIA;
 
 import java.util.Map;
 
 import org.eclipse.tractusx.autosetup.constant.AppActions;
 import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerEntry;
 import org.eclipse.tractusx.autosetup.manager.AppDeleteManager;
+import org.eclipse.tractusx.autosetup.manager.AutomaticStorageMediaSetupManager;
 import org.eclipse.tractusx.autosetup.manager.SDEManager;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -39,14 +42,22 @@ import lombok.RequiredArgsConstructor;
 public class SDEAppWorkFlow {
 
 	private final SDEManager sdeManager;
+	private final AutomaticStorageMediaSetupManager automaticStorageMediaSetupManager;
 
 	private final AppDeleteManager appDeleteManager;
+
+	@Value("${manual.automatic.media.storage:true}")
+	private boolean manualStorageMedia;
 
 	public Map<String, String> getWorkFlow(Customer customerDetails, SelectedTools tool, AppActions workflowAction,
 			Map<String, String> inputConfiguration, AutoSetupTriggerEntry triger) {
 
 		inputConfiguration
 				.putAll(sdeManager.managePackage(customerDetails, workflowAction, tool, inputConfiguration, triger));
+
+		if (manualStorageMedia)
+			automaticStorageMediaSetupManager.createStorageMedia(customerDetails, tool, inputConfiguration,
+					workflowAction, triger);
 
 		return inputConfiguration;
 	}
@@ -55,6 +66,9 @@ public class SDEAppWorkFlow {
 			AutoSetupTriggerEntry triger) {
 
 		appDeleteManager.deletePackage(SDE, tool, inputConfiguration, triger);
+
+		if (manualStorageMedia)
+			appDeleteManager.deletePackage(STORAGE_MEDIA, tool, inputConfiguration, triger);
 
 	}
 }

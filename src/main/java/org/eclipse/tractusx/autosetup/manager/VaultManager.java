@@ -100,6 +100,7 @@ public class VaultManager {
 			uploadSecrete(tenantNameNamespace, CLIENT_SECRET, tenantVaultSecret);
 
 			String encryptionkeysalias = openSSLClientManager.executeCommand("openssl rand -base64 16");
+			encryptionkeysalias = encryptionkeysalias.replace("\n", "");
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, encryptionkeysalias);
 			uploadSecrete(tenantNameNamespace, ENCRYPTIONKEYS, tenantVaultSecret);
@@ -163,9 +164,8 @@ public class VaultManager {
 			deleteSecret(tenantNameNamespace, CERTIFICATE_PRIVATE_KEY);
 			deleteSecret(tenantNameNamespace, ENCRYPTIONKEYS);
 			deleteSecret(tenantNameNamespace, CLIENT_SECRET);
-			
-			log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-Vault deleted");
 
+			log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-Vault deleted");
 		} catch (Exception ex) {
 
 			log.error("VaultManager failed retry attempt: : {}",
@@ -173,7 +173,8 @@ public class VaultManager {
 
 			autoSetupTriggerDetails.setStatus(TriggerStatusEnum.FAILED.name());
 			autoSetupTriggerDetails.setRemark(ex.getMessage());
-			throw new ServiceException("VaultManager Oops! We have an exception - " + ex.getMessage());
+			throw new ServiceException("VaultManager Oops! We have an exception - " + ex.getMessage() + ", Cause: "
+					+ LogUtil.getCause(ex));
 
 		} finally {
 			autoSetupTriggerManager.saveTriggerDetails(autoSetupTriggerDetails, triger);
@@ -182,7 +183,7 @@ public class VaultManager {
 
 	public void deleteSecret(String tenantName, String secretePath) throws URISyntaxException {
 
-		String valutURLwithpath = valutURL + V1_SECRET_DATA + tenantName+ "/data/" + secretePath;
+		String valutURLwithpath = valutURL + V1_SECRET_DATA + tenantName + "/data/" + secretePath;
 		URI url = new URI(valutURLwithpath);
 		vaultManagerProxy.deleteKeyandValue(url);
 
