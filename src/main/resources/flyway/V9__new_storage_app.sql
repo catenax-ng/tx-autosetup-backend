@@ -18,6 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+update app_tbl set package_version='0.3.24' where app_name='DT_REGISTRY';
+update app_tbl set package_version='2.2.5' where app_name='SDE';
+
 INSERT INTO app_tbl
 (app_name, context_cluster, context_namespace, expected_input_data, output_data, package_identifier, package_version, plugin_name, plugin_version, required_yaml_configuration, yaml_value_field_type)
 VALUES('STORAGE_MEDIA', 'default', 'kubeapps', '', NULL, 'ftserver/sftp', '5.1.65', 'helm.packages', 'v1alpha1', '$\{yamlValues\}', 'JSON');
