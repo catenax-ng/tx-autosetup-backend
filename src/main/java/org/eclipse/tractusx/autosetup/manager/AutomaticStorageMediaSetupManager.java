@@ -32,6 +32,7 @@ import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerEntry;
 import org.eclipse.tractusx.autosetup.exception.ServiceException;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
+import org.eclipse.tractusx.autosetup.utility.PasswordGenerator;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
@@ -59,6 +60,11 @@ public class AutomaticStorageMediaSetupManager {
 				.id(UUID.randomUUID().toString()).step("STORAGE_MEDIA").build();
 		try {
 			String packageName = tool.getLabel();
+
+			String generateRandomPassword = PasswordGenerator.generateRandomPassword(50);
+			inputData.put("sftpuser", "sftpuser");
+			inputData.put("sftppass", generateRandomPassword);
+
 			if (AppActions.CREATE.equals(action))
 				appManagement.createPackage(STORAGE_MEDIA, packageName, inputData);
 			else

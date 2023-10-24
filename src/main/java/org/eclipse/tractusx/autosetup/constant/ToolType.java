@@ -22,6 +22,6 @@ package org.eclipse.tractusx.autosetup.constant;
 
 public enum ToolType {
 
-	 SDE_WITH_EDC_TRACTUS, EDC_TRACTUS, DT_REGISTRY
+	 SDE_WITH_EDC_TRACTUS, EDC_TRACTUS, DT_REGISTRY, STORAGE_MEDIA
 
 }

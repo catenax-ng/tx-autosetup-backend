@@ -84,6 +84,8 @@ public class AutoSetupOrchitestratorService {
 	private final SDEAppWorkFlow sdeWorkFlow;
 	private final DTAppWorkFlow dtAppWorkFlow;
 
+	private final StorageMediaWorkflow storageMediaWorkflow;
+
 	private final InputConfigurationManager inputConfigurationManager;
 
 	private final AutoSetupTriggerMapper autoSetupTriggerMapper;
@@ -103,10 +105,10 @@ public class AutoSetupOrchitestratorService {
 
 	@Value("${portal.email.address}")
 	private String portalEmail;
-	
+
 	@Value("${mail.replyto.address}")
 	private String mailReplytoAddress;
-	
+
 	@Value("${manual.update}")
 	private boolean manualUpdate;
 
@@ -287,7 +289,6 @@ public class AutoSetupOrchitestratorService {
 		try {
 
 			Customer customer = autoSetupRequest.getCustomer();
-
 			trigger.setTriggerType(action.name());
 
 			for (AppServiceCatalogAndCustomerMapping appCatalogDetails : appCatalogListDetails) {
@@ -315,6 +316,13 @@ public class AutoSetupOrchitestratorService {
 						dtDeployment(autoSetupRequest.getCustomer(), action, trigger, inputConfiguration, selectedTool);
 
 						break;
+					case STORAGE_MEDIA:
+
+						storageMediaDeployment(autoSetupRequest.getCustomer(), action, trigger, inputConfiguration,
+								selectedTool);
+
+						break;
+
 					default:
 						throw new ServiceException(selectedTool.getTool() + " is not supported for auto setup");
 					}
@@ -328,7 +336,8 @@ public class AutoSetupOrchitestratorService {
 			log.error("Error in package creation " + e.getMessage());
 			trigger.setStatus(TriggerStatusEnum.FAILED.name());
 			trigger.setRemark(e.getMessage());
-			generateNotification(autoSetupRequest.getCustomer(), "Error in autosetup execution - "+trigger.getTriggerId());
+			generateNotification(autoSetupRequest.getCustomer(),
+					"Error in autosetup execution - " + trigger.getTriggerId(), "");
 		}
 
 		LocalDateTime now = LocalDateTime.now();
@@ -338,7 +347,37 @@ public class AutoSetupOrchitestratorService {
 		autoSetupTriggerManager.saveTriggerUpdate(trigger);
 	}
 
-	
+	private void storageMediaDeployment(Customer customer, AppActions action, AutoSetupTriggerEntry trigger,
+			Map<String, String> inputConfiguration, SelectedTools selectedTool) {
+
+		String label = selectedTool.getLabel();
+		selectedTool.setLabel("ftp-" + label);
+		Map<String, String> workFlow = storageMediaWorkflow.getWorkFlow(customer, selectedTool, action,
+				inputConfiguration, trigger);
+
+		String json = autoSetupTriggerMapper.fromMaptoStr(extractStorageResultMap(workFlow));
+
+		trigger.setAutosetupResult(json);
+
+		trigger.setStatus(TriggerStatusEnum.SUCCESS.name());
+
+		// Send an email
+		Map<String, Object> emailContent = new HashMap<>();
+		emailContent.putAll(workFlow);
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("<table>");
+		sb.append("<tr>SFTP User<td></td>");
+		sb.append("<td>" + workFlow.get("sftpuser") + "</td></tr>");
+		sb.append("<tr><td>SFTP Password</td>");
+		sb.append("<td>" + workFlow.get("sftppass") + "</td></tr>");
+		sb.append("<table>");
+		
+		generateNotification(customer, "Storage media deployed Successfully", sb.toString());
+		log.info(EMAIL_SENT_SUCCESSFULLY);
+
+	}
+
 	private void executeEDCTractus(AutoSetupRequest autoSetupRequest, AppActions action, AutoSetupTriggerEntry trigger,
 			Map<String, String> inputConfiguration, SelectedTools selectedTool) {
 
@@ -365,22 +404,21 @@ public class AutoSetupOrchitestratorService {
 		Map<String, Object> emailContent = new HashMap<>();
 		emailContent.put(ORGNAME, customer.getOrganizationName());
 		emailContent.putAll(edcOutput);
-		
-		
-		String connectivityTestStr= edcOutput.get(CONNECTOR_TEST_RESULT);
-		
-		boolean isTestConnectivityTestSuccess = connectivityTestStr!=null && connectivityTestStr.contains("consumer and provider");
-		
+
+		String connectivityTestStr = edcOutput.get(CONNECTOR_TEST_RESULT);
+
+		boolean isTestConnectivityTestSuccess = connectivityTestStr != null
+				&& connectivityTestStr.contains("consumer and provider");
+
 		if (isTestConnectivityTestSuccess) {
 			emailContent.put(TOEMAIL, customer.getEmail());
 			emailContent.put(CCEMAIL, portalEmail);
 			emailManager.sendEmail(emailContent, "EDC Application Activited Successfully", "edc_success_activate.html");
 			log.info(EMAIL_SENT_SUCCESSFULLY);
-		}else {
-			generateNotification(customer, "EDC Application Deployed Successfully");
+		} else {
+			generateNotification(customer, "EDC Application Deployed Successfully", "");
 		}
-		
-		
+
 	}
 
 	private void executeSDEWithEDCTractus(AutoSetupRequest autoSetupRequest, AppActions action,
@@ -449,12 +487,13 @@ public class AutoSetupOrchitestratorService {
 		emailContent.put(TEST_SERVICE_URL, map.get(TEST_SERVICE_URL));
 		emailContent.putAll(map);
 
-		String connectivityTestStr= inputConfiguration.get(CONNECTOR_TEST_RESULT);
-		boolean isTestConnectivityTestSuccess = connectivityTestStr!=null && connectivityTestStr.contains("consumer and provider");
-		
+		String connectivityTestStr = inputConfiguration.get(CONNECTOR_TEST_RESULT);
+		boolean isTestConnectivityTestSuccess = connectivityTestStr != null
+				&& connectivityTestStr.contains("consumer and provider");
+
 		if (manualUpdate || !isTestConnectivityTestSuccess) {
-			
-			generateNotification(customer, "SDE Application Deployed Successfully");
+
+			generateNotification(customer, "SDE Application Deployed Successfully", "");
 			trigger.setStatus(TriggerStatusEnum.MANUAL_UPDATE_PENDING.name());
 
 		} else {
@@ -476,19 +515,20 @@ public class AutoSetupOrchitestratorService {
 
 		trigger.setAutosetupResult(json);
 	}
-	
+
 	@SneakyThrows
-	private void generateNotification(Customer customer, String emailSubject) {
-		
+	private void generateNotification(Customer customer, String emailSubject, String content) {
+
 		Map<String, Object> emailContent = new HashMap<>();
 		emailContent.put(ORGNAME, customer.getOrganizationName());
 		emailContent.put(TOEMAIL, mailReplytoAddress);
 		emailContent.put(CCEMAIL, portalEmail);
+		emailContent.put("content", content);
+
 		emailManager.sendEmail(emailContent, emailSubject, "success.html");
 		log.info(EMAIL_SENT_SUCCESSFULLY);
 	}
 
-	
 	private void processDeleteTrigger(AutoSetupTriggerEntry trigger, Map<String, String> inputConfiguration) {
 
 		if (trigger != null && trigger.getAutosetupRequest() != null) {
@@ -554,6 +594,11 @@ public class AutoSetupOrchitestratorService {
 				selectedTool.setLabel("dt-" + label);
 				dtAppWorkFlow.deletePackageWorkFlow(selectedTool, inputConfiguration, trigger);
 
+				break;
+			case STORAGE_MEDIA:
+				label = selectedTool.getLabel();
+				selectedTool.setLabel("ftp-" + label);
+				storageMediaWorkflow.deletePackageWorkFlow(selectedTool, inputConfiguration, trigger);
 				break;
 			default:
 				throw new ServiceException(selectedTool.getTool() + " is not supported for auto setup");
@@ -627,6 +672,19 @@ public class AutoSetupOrchitestratorService {
 		dt.put("name", "DT");
 		dt.put("dtregistryUrl", outputMap.get("dtregistryUrl"));
 		dt.put("idpClientId", outputMap.get("idpClientId"));
+		processResult.add(dt);
+
+		return processResult;
+	}
+
+	private List<Map<String, String>> extractStorageResultMap(Map<String, String> outputMap) {
+
+		List<Map<String, String>> processResult = new ArrayList<>();
+
+		Map<String, String> dt = new ConcurrentHashMap<>();
+		dt.put("name", "sftp");
+		dt.put("sftpuser", outputMap.get("sftppass"));
+		dt.put("sftppass", outputMap.get("sftppass"));
 		processResult.add(dt);
 
 		return processResult;

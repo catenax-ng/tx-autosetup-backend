@@ -23,7 +23,32 @@ update app_tbl set package_version='2.2.5' where app_name='SDE';
 
 INSERT INTO app_tbl
 (app_name, context_cluster, context_namespace, expected_input_data, output_data, package_identifier, package_version, plugin_name, plugin_version, required_yaml_configuration, yaml_value_field_type)
-VALUES('STORAGE_MEDIA', 'default', 'kubeapps', '', NULL, 'ftserver/sftp', '5.1.65', 'helm.packages', 'v1alpha1', '$\{yamlValues\}', 'JSON');
+VALUES('STORAGE_MEDIA', 'default', 'kubeapps', '{
+    "persistentVolume": {
+        "size": "1Gi",
+        "subPath": "sftpdata"
+    },
+    "sftp": {
+        "users": [
+            {
+                "dirs": [
+                    "ToBeProcessed",
+                    "InProgress",
+                    "Success",
+                    "PartialSuccess",
+                    "Failed"
+                ],
+                "name": "$\{sftpuser\}",
+                "pass": "$\{sftppass\}"
+            }
+        ]
+    },
+    "service": {
+        "nodePort": 0,
+        "port": 22,
+        "type": "LoadBalancer"
+    }
+}', NULL, 'ftpserver/sftp-server', '0.2.0', 'helm.packages', 'v1alpha1', '$\{yamlValues\}', 'JSON');
 
 INSERT INTO app_service_catalog_tbl
 (canonical_service_id, ct_name, service_tools, workflow)
