@@ -1,4 +1,3 @@
-<!--
 /********************************************************************************
 * Copyright (c) 2023 T-Systems International GmbH
 * Copyright (c) 2023 Contributors to the Eclipse Foundation
@@ -18,30 +17,40 @@
 *
 * SPDX-License-Identifier: Apache-2.0
 ********************************************************************************/
--->
 
-<!doctype html>
-<html lang="en" xml:lang="en">
+package org.eclipse.tractusx.autosetup.constant;
 
-<head>
-	<title>DT title</title>
-</head>
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
-<body>
-	<div style="vertical-align: middle">
-	</div>
-	</td>
-	<div>
-		<p><strong>Hello ${orgname},</strong></p>
-		<p>The DT registry tool successfully activated for your use.</p>
+import lombok.Data;
 
-		<p>Please find your DT registry details below:</p>
-		${content}
+@Configuration
+@Data
+public class EmailConfigurationProperty {
 
-		<p>Kind Regards<br />Catina-X</p>
+	@Value("${mail.smtp.host}")
+	private String host;
 
-	</div>
+	@Value("${mail.smtp.port}")
+	private String port;
 
-</body>
+	@Value("${mail.from.address}")
+	private String fromAddress;
 
-</html>
+	@Value("${mail.smtp.starttls.enable}")
+	private Boolean startTlsEnable;
+
+	@Value("${mail.smtp.username}")
+	private String username;
+
+	@Value("${mail.smtp.password}")
+	private String password;
+
+	@Value("${mail.smtp.auth}")
+	private Boolean auth;
+	
+	@Value("${mail.replyto.address}")
+	private String replytoAddress;
+
+}

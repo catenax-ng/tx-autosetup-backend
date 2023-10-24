@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.tractusx.autosetup.constant.AppActions;
+import org.eclipse.tractusx.autosetup.constant.EmailConfigurationProperty;
 import org.eclipse.tractusx.autosetup.constant.SDEConfigurationProperty;
 import org.eclipse.tractusx.autosetup.constant.TriggerStatusEnum;
 import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerDetails;
@@ -53,11 +54,12 @@ public class SDEManager {
 
 	@Value("${managed.dt-registry:true}")
 	private boolean managedDtRegistry;
-	
+
 	@Value("${manual.update:false}")
 	private boolean manualUpdate;
 
 	private final SDEConfigurationProperty sDEConfigurationProperty;
+	private final EmailConfigurationProperty emailConfigurationProperty;
 
 	@Retryable(retryFor = {
 			ServiceException.class }, maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "#{${retry.backOffDelay}}"))
@@ -85,7 +87,7 @@ public class SDEManager {
 
 			inputData.put("sde.digital-twins.authentication.url",
 					sDEConfigurationProperty.getDigitalTwinsAuthenticationUrl());
-			
+
 			if (!manualUpdate) {
 				inputData.put("digital-twins.authentication.clientId", inputData.get("keycloakAuthenticationClientId"));
 				inputData.put("digital-twins.authentication.clientSecret",
@@ -94,7 +96,7 @@ public class SDEManager {
 				inputData.put("sdebackendkeycloakclientid", inputData.get("keycloakResourceClient"));
 				inputData.put("sdefrontendkeycloakclientid", inputData.get("keycloakResourceClient"));
 			}
-			
+
 			if (managedDtRegistry) {
 				inputData.put("sde.digital-twins.hostname", inputData.get("dtregistryUrl"));
 			} else {
@@ -105,7 +107,7 @@ public class SDEManager {
 			inputData.put("sde.keycloak.auth", sDEConfigurationProperty.getKeycloakAuth());
 			inputData.put("sde.keycloak.realm", sDEConfigurationProperty.getKeycloakRealm());
 			inputData.put("sde.keycloak.tokenUrl", sDEConfigurationProperty.getKeycloakTokenUrl());
-			
+
 			inputData.put("sde.partner.pool.hostname", sDEConfigurationProperty.getPartnerPoolHostname());
 			inputData.put("sde.partner.pool.authentication.url",
 					sDEConfigurationProperty.getPartnerPoolAuthenticationUrl());
@@ -122,6 +124,21 @@ public class SDEManager {
 			inputData.put("sde.discovery.authentication.url", sDEConfigurationProperty.getDiscoveryAuthenticationUrl());
 			inputData.put("sde.discovery.clientId", sDEConfigurationProperty.getDiscoveryClientId());
 			inputData.put("sde.discovery.clientSecret", sDEConfigurationProperty.getDiscoveryClientSecret());
+
+			inputData.put("sftpHost", "");
+			inputData.put("sftpPort", "22");
+			inputData.put("sftpUsername", "");
+			inputData.put("sftpPassword", "");
+			inputData.put("sftpKey", "");
+
+			inputData.put("emailUsername", emailConfigurationProperty.getUsername());
+			inputData.put("emailPassword", emailConfigurationProperty.getPassword());
+			inputData.put("emailHost", emailConfigurationProperty.getHost());
+			inputData.put("emailPort", emailConfigurationProperty.getPort());
+			inputData.put("emailTo", customerDetails.getEmail());
+			inputData.put("emailCC", emailConfigurationProperty.getReplytoAddress());
+			inputData.put("emailFrom", "SDE notification<noreply@sde.com>");
+			inputData.put("emailReply", emailConfigurationProperty.getReplytoAddress());
 
 			String packageName = tool.getLabel();
 
