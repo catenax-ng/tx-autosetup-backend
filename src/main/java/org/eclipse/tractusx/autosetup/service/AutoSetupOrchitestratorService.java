@@ -29,10 +29,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.tractusx.autosetup.constant.AppActions;
 import org.eclipse.tractusx.autosetup.constant.TriggerStatusEnum;
@@ -331,13 +331,13 @@ public class AutoSetupOrchitestratorService {
 			trigger.setRemark(e.getMessage());
 			generateNotification(autoSetupRequest.getCustomer(),
 					"Error in autosetup execution - " + trigger.getTriggerId(), "", SUCCESS_HTML_TEMPLATE);
+		} finally {
+			LocalDateTime now = LocalDateTime.now();
+			trigger.setModifiedTimestamp(now.toString());
+			trigger.setInputConfiguration(autoSetupTriggerMapper.fromMaptoStr(List.of(inputConfiguration)));
+
+			autoSetupTriggerManager.saveTriggerUpdate(trigger);
 		}
-
-		LocalDateTime now = LocalDateTime.now();
-		trigger.setModifiedTimestamp(now.toString());
-		trigger.setInputConfiguration(autoSetupTriggerMapper.fromMaptoStr(List.of(inputConfiguration)));
-
-		autoSetupTriggerManager.saveTriggerUpdate(trigger);
 	}
 
 	private void executeEDCTractus(AutoSetupRequest autoSetupRequest, AppActions action, AutoSetupTriggerEntry trigger,
@@ -454,6 +454,9 @@ public class AutoSetupOrchitestratorService {
 		List<Map<String, String>> extractResultMap = extractResultMap(map);
 		String generateEmailTable = generateEmailTable(extractResultMap);
 
+		String json = autoSetupTriggerMapper.fromMaptoStr(extractResultMap);
+		trigger.setAutosetupResult(json);
+		
 		String connectivityTestStr = inputConfiguration.get(CONNECTOR_TEST_RESULT);
 		boolean isTestConnectivityTestSuccess = connectivityTestStr != null
 				&& connectivityTestStr.contains("consumer and provider");
@@ -477,8 +480,6 @@ public class AutoSetupOrchitestratorService {
 			// End of email sending code
 		}
 		log.info(EMAIL_SENT_SUCCESSFULLY);
-		String json = autoSetupTriggerMapper.fromMaptoStr(extractResultMap);
-		trigger.setAutosetupResult(json);
 	}
 
 	@SneakyThrows
@@ -577,7 +578,7 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dft = new ConcurrentHashMap<>();
+		Map<String, String> dft = new LinkedHashMap<>();
 		dft.put("name", "SDE");
 		dft.put(SDE_FRONTEND_URL, outputMap.get(SDE_FRONTEND_URL));
 		dft.put(SDE_BACKEND_URL, outputMap.get(SDE_BACKEND_URL));
@@ -610,7 +611,7 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> edc = new ConcurrentHashMap<>();
+		Map<String, String> edc = new LinkedHashMap<>();
 		edc.put("name", "EDC");
 		edc.put("controlPlaneEndpoint", outputMap.get("controlPlaneEndpoint"));
 		edc.put("controlPlaneDataEndpoint", outputMap.get("controlPlaneDataEndpoint"));
@@ -634,7 +635,7 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dt = new ConcurrentHashMap<>();
+		Map<String, String> dt = new LinkedHashMap<>();
 		dt.put("name", "DT");
 		dt.put("dtregistryUrl", outputMap.get("dtregistryUrl"));
 		dt.put("idpClientId", outputMap.get("idpClientId"));
