@@ -598,8 +598,9 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dt = extractDTResultMap(outputMap).get(0);
-		processResult.add(dt);
+		//commentting this beause of dt is get localy managed
+		//Map<String, String> dt = extractDTResultMap(outputMap).get(0);
+		//processResult.add(dt);
 
 		Map<String, String> edc = extractEDCResultMap(outputMap).get(0);
 		processResult.add(edc);

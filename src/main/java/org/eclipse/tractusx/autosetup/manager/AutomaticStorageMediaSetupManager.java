@@ -32,6 +32,7 @@ import org.eclipse.tractusx.autosetup.minio.MinioHandler;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
 import org.eclipse.tractusx.autosetup.utility.PasswordGenerator;
+import org.eclipse.tractusx.autosetup.utility.ValueReplacerUtility;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -49,32 +50,10 @@ public class AutomaticStorageMediaSetupManager {
 
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
 	private final MinioHandler minioHandler;
-	
+	private final ValueReplacerUtility valueReplacerUtility;
+
 	@Value("${automatic.storage.media.minio.endpoint:default}")
 	private String endpoint;
-
-	private static final String POLICY_JSON = """
-				{
-				    "Version": "2012-10-17",
-				    "Statement": [
-				        {
-				            "Effect": "Allow",
-				            "Action": [
-				                "s3:GetObject",
-				                "s3:PutObject",
-				                "s3:GetObjectVersion",
-				                "s3:PutObjectTagging",
-				                "s3:List*",
-				                "s3:DeleteObject"
-				            ],
-				            "Resource": [
-				                "arn:aws:s3:::%s/*"
-				            ]
-				        }
-				    ]
-				}
-			""";
-
 
 	@SneakyThrows
 	@Retryable(retryFor = {
@@ -91,7 +70,9 @@ public class AutomaticStorageMediaSetupManager {
 
 			// deleting policy before creation if exist
 			deletePolicy(tenantNameNamespace);
-			minioHandler.addCannedPolicy(tenantNameNamespace, String.format(POLICY_JSON, tenantNameNamespace));
+			minioHandler.addCannedPolicy(tenantNameNamespace, valueReplacerUtility
+					.valueReplacer("/request-template/s3-policy-template.json", Map.of("bucket", tenantNameNamespace)));
+			
 			log.info(tenantNameNamespace + " bucket policy created successfully");
 
 			// deleting user before creation if exist

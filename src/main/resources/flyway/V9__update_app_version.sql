@@ -220,15 +220,15 @@ update app_tbl set expected_input_data='{
 							
 							minio.bucket-name=$\{storage.media.bucket\}
 							
-							minio.location.tobeprocessed=/ToBeProcessed
+							minio.location.tobeprocessed=ToBeProcessed
 							
-							minio.location.inprogress=/InProgress
+							minio.location.inprogress=InProgress
 							
-							minio.location.success=/Success
+							minio.location.success=Success
 							
-							minio.location.partialsucess=/PartialSuccess
+							minio.location.partialsucess=PartialSuccess
 							
-							minio.location.failed=/Failed"
+							minio.location.failed=Failed"
 			}			
 	},
 	"frontend": {
