@@ -32,7 +32,7 @@
 	</parent>
 	<groupId>org.eclipse.tractusx</groupId>
 	<artifactId>managed-service-orchestrator</artifactId>
-	<version>1.5.1</version>
+	<version>1.5.2</version>
 	<name>managed-service-orchestrator</name>
 	<description>managed-service-orchestrator</description>
 	<properties>
@@ -295,6 +295,16 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>8.5.6</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.minio</groupId>
+		    <artifactId>minio-admin</artifactId>
+		    <version>8.5.6</version>
 		</dependency>
 	</dependencies>
 

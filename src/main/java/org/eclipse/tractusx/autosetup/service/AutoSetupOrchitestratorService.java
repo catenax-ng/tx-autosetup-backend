@@ -29,10 +29,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.tractusx.autosetup.constant.AppActions;
 import org.eclipse.tractusx.autosetup.constant.TriggerStatusEnum;
@@ -67,6 +67,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AutoSetupOrchitestratorService {
 
+	private static final String SUCCESS_HTML_TEMPLATE = "success.html";
+	private static final String CONTENT = "content";
 	private static final String CCEMAIL = "ccemail";
 	private static final String TEST_SERVICE_URL = "testServiceURL";
 	private static final String CONNECTOR_TEST_RESULT = "connectorTestResult";
@@ -102,11 +104,11 @@ public class AutoSetupOrchitestratorService {
 	private String targetCluster;
 
 	@Value("${portal.email.address}")
-	private String portalEmail;
-	
+	private String technicalEmail;
+
 	@Value("${mail.replyto.address}")
 	private String mailReplytoAddress;
-	
+
 	@Value("${manual.update}")
 	private boolean manualUpdate;
 
@@ -287,7 +289,6 @@ public class AutoSetupOrchitestratorService {
 		try {
 
 			Customer customer = autoSetupRequest.getCustomer();
-
 			trigger.setTriggerType(action.name());
 
 			for (AppServiceCatalogAndCustomerMapping appCatalogDetails : appCatalogListDetails) {
@@ -328,17 +329,17 @@ public class AutoSetupOrchitestratorService {
 			log.error("Error in package creation " + e.getMessage());
 			trigger.setStatus(TriggerStatusEnum.FAILED.name());
 			trigger.setRemark(e.getMessage());
-			generateNotification(autoSetupRequest.getCustomer(), "Error in autosetup execution - "+trigger.getTriggerId());
+			generateNotification(autoSetupRequest.getCustomer(),
+					"Error in autosetup execution - " + trigger.getTriggerId(), "", SUCCESS_HTML_TEMPLATE);
+		} finally {
+			LocalDateTime now = LocalDateTime.now();
+			trigger.setModifiedTimestamp(now.toString());
+			trigger.setInputConfiguration(autoSetupTriggerMapper.fromMaptoStr(List.of(inputConfiguration)));
+
+			autoSetupTriggerManager.saveTriggerUpdate(trigger);
 		}
-
-		LocalDateTime now = LocalDateTime.now();
-		trigger.setModifiedTimestamp(now.toString());
-		trigger.setInputConfiguration(autoSetupTriggerMapper.fromMaptoStr(List.of(inputConfiguration)));
-
-		autoSetupTriggerManager.saveTriggerUpdate(trigger);
 	}
 
-	
 	private void executeEDCTractus(AutoSetupRequest autoSetupRequest, AppActions action, AutoSetupTriggerEntry trigger,
 			Map<String, String> inputConfiguration, SelectedTools selectedTool) {
 
@@ -354,33 +355,38 @@ public class AutoSetupOrchitestratorService {
 
 	private void edcDeployemnt(AutoSetupRequest autoSetupRequest, AutoSetupTriggerEntry trigger,
 			Map<String, String> edcOutput) {
-		String json = autoSetupTriggerMapper.fromMaptoStr(extractEDCResultMap(edcOutput));
+
+		List<Map<String, String>> extractResultMap = extractEDCResultMap(edcOutput);
+		String json = autoSetupTriggerMapper.fromMaptoStr(extractResultMap);
 
 		trigger.setAutosetupResult(json);
 
 		trigger.setStatus(TriggerStatusEnum.SUCCESS.name());
 
 		Customer customer = autoSetupRequest.getCustomer();
+
+		String connectivityTestStr = edcOutput.get(CONNECTOR_TEST_RESULT);
+
+		boolean isTestConnectivityTestSuccess = connectivityTestStr != null
+				&& connectivityTestStr.contains("consumer and provider");
+
+		String generateEmailTable = generateEmailTable(extractResultMap);
 		// Send an email
 		Map<String, Object> emailContent = new HashMap<>();
 		emailContent.put(ORGNAME, customer.getOrganizationName());
-		emailContent.putAll(edcOutput);
-		
-		
-		String connectivityTestStr= edcOutput.get(CONNECTOR_TEST_RESULT);
-		
-		boolean isTestConnectivityTestSuccess = connectivityTestStr!=null && connectivityTestStr.contains("consumer and provider");
-		
+		emailContent.put(CCEMAIL, technicalEmail);
+		emailContent.put(TEST_SERVICE_URL, findValueInMap(edcOutput, TEST_SERVICE_URL));
+		emailContent.put(CONNECTOR_TEST_RESULT, CONNECTOR_TEST_RESULT);
+		emailContent.put(CONTENT, generateEmailTable);
+
 		if (isTestConnectivityTestSuccess) {
 			emailContent.put(TOEMAIL, customer.getEmail());
-			emailContent.put(CCEMAIL, portalEmail);
 			emailManager.sendEmail(emailContent, "EDC Application Activited Successfully", "edc_success_activate.html");
-			log.info(EMAIL_SENT_SUCCESSFULLY);
-		}else {
-			generateNotification(customer, "EDC Application Deployed Successfully");
+		} else {
+			emailContent.put(TOEMAIL, technicalEmail);
+			emailManager.sendEmail(emailContent, "EDC Application Deployed Successfully", SUCCESS_HTML_TEMPLATE);
 		}
-		
-		
+		log.info(EMAIL_SENT_SUCCESSFULLY);
 	}
 
 	private void executeSDEWithEDCTractus(AutoSetupRequest autoSetupRequest, AppActions action,
@@ -409,7 +415,10 @@ public class AutoSetupOrchitestratorService {
 
 		dtAppWorkFlow.getWorkFlow(customer, selectedTool, action, inputConfiguration, trigger);
 
-		String json = autoSetupTriggerMapper.fromMaptoStr(extractDTResultMap(inputConfiguration));
+		List<Map<String, String>> extractDTResultMap = extractDTResultMap(inputConfiguration);
+		String generateEmailTable = generateEmailTable(extractDTResultMap);
+
+		String json = autoSetupTriggerMapper.fromMaptoStr(extractDTResultMap);
 		trigger.setAutosetupResult(json);
 
 		trigger.setStatus(TriggerStatusEnum.SUCCESS.name());
@@ -417,9 +426,9 @@ public class AutoSetupOrchitestratorService {
 		// Send an email
 		Map<String, Object> emailContent = new HashMap<>();
 		emailContent.put(ORGNAME, customer.getOrganizationName());
-		emailContent.putAll(inputConfiguration);
 		emailContent.put(TOEMAIL, customer.getEmail());
-		emailContent.put(CCEMAIL, portalEmail);
+		emailContent.put(CCEMAIL, technicalEmail);
+		emailContent.put(CONTENT, generateEmailTable);
 
 		emailManager.sendEmail(emailContent, "DT registry Application Activited Successfully",
 				"dt_success_template.html");
@@ -442,53 +451,50 @@ public class AutoSetupOrchitestratorService {
 		Map<String, String> map = sdeWorkFlow.getWorkFlow(autoSetupRequest.getCustomer(), selectedTool, action,
 				inputConfiguration, trigger);
 
-		Map<String, Object> emailContent = new HashMap<>();
-		emailContent.put(SDE_FRONTEND_URL, map.get(SDE_FRONTEND_URL));
-		emailContent.put(SDE_BACKEND_URL, map.get(SDE_BACKEND_URL));
-		emailContent.put(CONNECTOR_TEST_RESULT, map.get(CONNECTOR_TEST_RESULT));
-		emailContent.put(TEST_SERVICE_URL, map.get(TEST_SERVICE_URL));
-		emailContent.putAll(map);
+		List<Map<String, String>> extractResultMap = extractResultMap(map);
+		String generateEmailTable = generateEmailTable(extractResultMap);
 
-		String connectivityTestStr= inputConfiguration.get(CONNECTOR_TEST_RESULT);
-		boolean isTestConnectivityTestSuccess = connectivityTestStr!=null && connectivityTestStr.contains("consumer and provider");
-		
-		if (manualUpdate || !isTestConnectivityTestSuccess) {
-			
-			generateNotification(customer, "SDE Application Deployed Successfully");
-			trigger.setStatus(TriggerStatusEnum.MANUAL_UPDATE_PENDING.name());
-
-		} else {
-
-			trigger.setStatus(TriggerStatusEnum.SUCCESS.name());
-
-			// Send an email
-			emailContent.put(ORGNAME, customer.getOrganizationName());
-			emailContent.put(TOEMAIL, customer.getEmail());
-			emailContent.put(CCEMAIL, portalEmail);
-
-			emailManager.sendEmail(emailContent, "SDE Application Activited Successfully", "success_activate.html");
-			log.info(EMAIL_SENT_SUCCESSFULLY);
-			// End of email sending code
-
-		}
-
-		String json = autoSetupTriggerMapper.fromMaptoStr(extractResultMap(map));
-
+		String json = autoSetupTriggerMapper.fromMaptoStr(extractResultMap);
 		trigger.setAutosetupResult(json);
-	}
-	
-	@SneakyThrows
-	private void generateNotification(Customer customer, String emailSubject) {
 		
+		String connectivityTestStr = inputConfiguration.get(CONNECTOR_TEST_RESULT);
+		boolean isTestConnectivityTestSuccess = connectivityTestStr != null
+				&& connectivityTestStr.contains("consumer and provider");
+
 		Map<String, Object> emailContent = new HashMap<>();
 		emailContent.put(ORGNAME, customer.getOrganizationName());
-		emailContent.put(TOEMAIL, mailReplytoAddress);
-		emailContent.put(CCEMAIL, portalEmail);
-		emailManager.sendEmail(emailContent, emailSubject, "success.html");
+		emailContent.put(CCEMAIL, technicalEmail);
+		emailContent.put(CONTENT, generateEmailTable);
+		if (manualUpdate || !isTestConnectivityTestSuccess) {
+			emailContent.put(TOEMAIL, technicalEmail);
+			emailManager.sendEmail(emailContent, "SDE Application Deployed Successfully", SUCCESS_HTML_TEMPLATE);
+			trigger.setStatus(TriggerStatusEnum.MANUAL_UPDATE_PENDING.name());
+		} else {
+			trigger.setStatus(TriggerStatusEnum.SUCCESS.name());
+			// Send an email
+			emailContent.put(TOEMAIL, customer.getEmail());
+			emailContent.put(TEST_SERVICE_URL, findValueInMap(map, TEST_SERVICE_URL));
+			emailContent.put(CONNECTOR_TEST_RESULT, CONNECTOR_TEST_RESULT);
+
+			emailManager.sendEmail(emailContent, "SDE Application Activited Successfully", "success_activate.html");
+			// End of email sending code
+		}
 		log.info(EMAIL_SENT_SUCCESSFULLY);
 	}
 
-	
+	@SneakyThrows
+	private void generateNotification(Customer customer, String emailSubject, String content, String template) {
+
+		Map<String, Object> emailContent = new HashMap<>();
+		emailContent.put(ORGNAME, customer.getOrganizationName());
+		emailContent.put(TOEMAIL, mailReplytoAddress);
+		emailContent.put(CCEMAIL, technicalEmail);
+		emailContent.put(CONTENT, content);
+
+		emailManager.sendEmail(emailContent, emailSubject, template);
+		log.info(EMAIL_SENT_SUCCESSFULLY);
+	}
+
 	private void processDeleteTrigger(AutoSetupTriggerEntry trigger, Map<String, String> inputConfiguration) {
 
 		if (trigger != null && trigger.getAutosetupRequest() != null) {
@@ -536,7 +542,8 @@ public class AutoSetupOrchitestratorService {
 				dtAppWorkFlow.deletePackageWorkFlow(selectedTool, inputConfiguration, trigger);
 
 				selectedTool.setLabel("sde-" + label);
-				sdeWorkFlow.deletePackageWorkFlow(selectedTool, inputConfiguration, trigger);
+				AutoSetupRequest orgRequest = customerDetailsMapper.fromStr(trigger.getAutosetupRequest());
+				sdeWorkFlow.deletePackageWorkFlow(selectedTool, inputConfiguration, trigger, orgRequest);
 
 				break;
 
@@ -571,10 +578,15 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dft = new ConcurrentHashMap<>();
+		Map<String, String> dft = new LinkedHashMap<>();
 		dft.put("name", "SDE");
 		dft.put(SDE_FRONTEND_URL, outputMap.get(SDE_FRONTEND_URL));
 		dft.put(SDE_BACKEND_URL, outputMap.get(SDE_BACKEND_URL));
+		dft.put("storage.media.bucket", findValueInMap(outputMap, "storage.media.bucket"));
+		dft.put("storage.media.endpoint", findValueInMap(outputMap, "storage.media.endpoint"));
+		dft.put("storage.media.accessKey", findValueInMap(outputMap, "storage.media.accessKey"));
+		dft.put("storage.media.secretKey", findValueInMap(outputMap, "storage.media.secretKey"));
+
 		processResult.add(dft);
 
 		processResult.addAll(extractDependantAppResult(outputMap));
@@ -586,8 +598,9 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dt = extractDTResultMap(outputMap).get(0);
-		processResult.add(dt);
+		//commentting this beause of dt is get localy managed
+		//Map<String, String> dt = extractDTResultMap(outputMap).get(0);
+		//processResult.add(dt);
 
 		Map<String, String> edc = extractEDCResultMap(outputMap).get(0);
 		processResult.add(edc);
@@ -599,7 +612,7 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> edc = new ConcurrentHashMap<>();
+		Map<String, String> edc = new LinkedHashMap<>();
 		edc.put("name", "EDC");
 		edc.put("controlPlaneEndpoint", outputMap.get("controlPlaneEndpoint"));
 		edc.put("controlPlaneDataEndpoint", outputMap.get("controlPlaneDataEndpoint"));
@@ -623,13 +636,27 @@ public class AutoSetupOrchitestratorService {
 
 		List<Map<String, String>> processResult = new ArrayList<>();
 
-		Map<String, String> dt = new ConcurrentHashMap<>();
+		Map<String, String> dt = new LinkedHashMap<>();
 		dt.put("name", "DT");
 		dt.put("dtregistryUrl", outputMap.get("dtregistryUrl"));
 		dt.put("idpClientId", outputMap.get("idpClientId"));
 		processResult.add(dt);
 
 		return processResult;
+	}
+
+	public String generateEmailTable(List<Map<String, String>> content) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<table>");
+		content.forEach(element -> {
+			sb.append("<tr><td colspan=\"2\"><b>" + element.get("name") + "</b></td></tr>");
+			element.entrySet().forEach(entry -> {
+				if (!"name".equals(entry.getKey()))
+					sb.append("<tr><td>" + entry.getKey() + "</td><td>" + entry.getValue() + "</td></tr>");
+			});
+		});
+		sb.append("</table>");
+		return sb.toString();
 	}
 
 	public boolean checkNamespaceisExist(String targetNamespace) {
