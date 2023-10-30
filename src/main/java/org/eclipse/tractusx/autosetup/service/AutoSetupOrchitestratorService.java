@@ -638,7 +638,7 @@ public class AutoSetupOrchitestratorService {
 
 		Map<String, String> dt = new LinkedHashMap<>();
 		dt.put("name", "DT");
-		dt.put("dtregistryUrl", outputMap.get("dtregistryUrl"));
+		dt.put("dtregistryUrlWithURI", outputMap.get("dtregistryUrlWithURI"));
 		dt.put("idpClientId", outputMap.get("idpClientId"));
 		processResult.add(dt);
 
