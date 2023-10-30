@@ -86,9 +86,9 @@ update app_tbl set expected_input_data='{
 							
 							spring.jpa.open-in-view=false
 							
-							digital-twins.hostname=http://cx-dt-sdeedctx-dtregistry-registry-svc:8080
+							digital-twins.hostname=$\{dtregistryUrl\}
 							
-							digital-twins.api=/api/v3.0
+							digital-twins.api=$\{dtregistryURI\}
 							
 							digital-twins.authentication.url=$\{sde.digital-twins.authentication.url\}
 							
@@ -311,6 +311,6 @@ update app_tbl set expected_input_data= '{
                 "tls": false
             }
     }
-}', package_version='0.3.24' where app_name='DT_REGISTRY';
+}', package_version='0.3.27' where app_name='DT_REGISTRY';
 
 update app_tbl set expected_input_data= replace(replace(expected_input_data,'\{','{'),'\}','}'), required_yaml_configuration=replace(replace(required_yaml_configuration,'\{','{'),'\}','}');
