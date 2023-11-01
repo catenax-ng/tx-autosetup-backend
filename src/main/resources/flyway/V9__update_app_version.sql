@@ -86,9 +86,9 @@ update app_tbl set expected_input_data='{
 							
 							spring.jpa.open-in-view=false
 							
-							digital-twins.hostname=http://cx-dt-sdeedctx-dtregistry-registry-svc:8080
+							digital-twins.hostname=$\{dtregistryUrl\}
 							
-							digital-twins.api=/api/v3.0
+							digital-twins.api=$\{dtregistryURI\}
 							
 							digital-twins.authentication.url=$\{sde.digital-twins.authentication.url\}
 							
@@ -220,15 +220,15 @@ update app_tbl set expected_input_data='{
 							
 							minio.bucket-name=$\{storage.media.bucket\}
 							
-							minio.location.tobeprocessed=ToBeProcessed
+							minio.location.tobeprocessed=
 							
-							minio.location.inprogress=InProgress
+							minio.location.inprogress=/InProgress
 							
-							minio.location.success=Success
+							minio.location.success=/Success
 							
-							minio.location.partialsucess=PartialSuccess
+							minio.location.partialsucess=/PartialSuccess
 							
-							minio.location.failed=Failed"
+							minio.location.failed=/Failed"
 			}			
 	},
 	"frontend": {
@@ -266,7 +266,7 @@ update app_tbl set expected_input_data='{
 							REACT_APP_FILESIZE=268435456"
 		   }
    }
-}',  package_identifier='tx-sde-charts/sde' ,package_version='1.0.0' where app_name='SDE';
+}',  package_identifier='tx-sde-charts/sde' ,package_version='1.0.1' where app_name='SDE';
 
 
 update app_tbl set expected_input_data= '{
@@ -294,9 +294,9 @@ update app_tbl set expected_input_data= '{
 		"idpClientId" : "$\{idpClientId\}",
 		"idpIssuerUri": "$\{idpIssuerUri\}",
 		"tenantId" : "$\{bpnNumber\}",
-		"authentication": false,
+		"authentication": $\{dtNeedExternalAccess\},
         "ingress": {
-                "enabled": false,
+                "enabled": $\{dtNeedExternalAccess\},
                 "hostname": "$\{dnsName\}",
                 "annotations": {
 				      "cert-manager.io/cluster-issuer": letsencrypt-prod,
@@ -308,9 +308,9 @@ update app_tbl set expected_input_data= '{
 				},
 				"urlPrefix": /$\{dtregistryUrlPrefix\},
                 "className": "nginx",
-                "tls": false
+                "tls": $\{dtNeedExternalAccess\}
             }
     }
-}', package_version='0.3.24' where app_name='DT_REGISTRY';
+}', package_version='0.3.27' where app_name='DT_REGISTRY';
 
 update app_tbl set expected_input_data= replace(replace(expected_input_data,'\{','{'),'\}','}'), required_yaml_configuration=replace(replace(required_yaml_configuration,'\{','{'),'\}','}');

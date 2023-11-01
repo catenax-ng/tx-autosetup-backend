@@ -58,7 +58,6 @@ public class VaultManager {
 	public static final String CERTIFICATE_PRIVATE_KEY = "certificate-private-key";
 	private final VaultAppManageProxy vaultManagerProxy;
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
-	private final OpenSSLClientManager openSSLClientManager;
 
 	@Value("${vault.url}")
 	private String valutURL;
@@ -94,15 +93,13 @@ public class VaultManager {
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, inputData.get("selfsigncertificateprivatekey"));
 			uploadSecrete(tenantNameNamespace, CERTIFICATE_PRIVATE_KEY, tenantVaultSecret);
-			
+
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, inputData.get("keycloakAuthenticationClientSecret"));
 			uploadSecrete(tenantNameNamespace, CLIENT_SECRET, tenantVaultSecret);
 
-			String encryptionkeysalias = openSSLClientManager.executeCommand("openssl rand -base64 16");
-			encryptionkeysalias = encryptionkeysalias.replace("\n", "");
 			tenantVaultSecret = new HashMap<>();
-			tenantVaultSecret.put(CONTENT, encryptionkeysalias);
+			tenantVaultSecret.put(CONTENT, "c3RhbmRhcmRfZW5jX2tleQo=");
 			uploadSecrete(tenantNameNamespace, ENCRYPTIONKEYS, tenantVaultSecret);
 
 			inputData.put(DAPS_CERT, DAPS_CERT);

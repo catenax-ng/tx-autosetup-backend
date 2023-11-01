@@ -39,6 +39,7 @@ import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
 import org.eclipse.tractusx.autosetup.utility.LogUtil;
 import org.eclipse.tractusx.autosetup.utility.WaitingTimeUtility;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
@@ -59,6 +60,9 @@ public class DTRegistryManager {
 
 	private final EDCProxyService eDCProxyService;
 
+	@Value("${managed.dt-registry.local:true}")
+	private boolean managedDTRegistryLocal;
+
 	@Retryable(retryFor = {
 			ServiceException.class }, maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "#{${retry.backOffDelay}}"))
 	public Map<String, String> managePackage(Customer customerDetails, AppActions action, SelectedTools tool,
@@ -74,9 +78,18 @@ public class DTRegistryManager {
 
 			String dturi = sDEConfigurationProperty.getDtregistryApiUri();
 			dturi = StringUtils.isAllEmpty(dturi) ? "/api/v3.0" : dturi;
-			String dtregistryUrl = dnsNameURLProtocol + "://" + dnsName + "/"
-					+ sDEConfigurationProperty.getDtregistryUrlPrefix() + dturi;
+			if (managedDTRegistryLocal) {
+				String appName = DT_REGISTRY.name().replace("_", "");
+				String localDTUrl = "http://cx-" + packageName + "-" + appName.toLowerCase() + "-registry-svc:8080";
+				inputData.put("dtregistryUrl", localDTUrl);
+				inputData.put("dtregistryUrlWithURI", localDTUrl + dturi);
+			} else {
+				String dtregistryUrl = dnsNameURLProtocol + "://" + dnsName + "/"+ sDEConfigurationProperty.getDtregistryUrlPrefix();
+				inputData.put("dtregistryUrl", dtregistryUrl);
+				inputData.put("dtregistryUrlWithURI", dtregistryUrl + dturi);
+			}
 
+			inputData.put("dtNeedExternalAccess", String.valueOf(!managedDTRegistryLocal));
 			inputData.put("rgdatabase", "registry");
 			inputData.put("rgdbpass", "admin@123");
 			inputData.put("rgusername", "catenax");
@@ -84,8 +97,7 @@ public class DTRegistryManager {
 			inputData.put("idpIssuerUri", sDEConfigurationProperty.getResourceServerIssuer());
 			inputData.put("tenantId", sDEConfigurationProperty.getDtregistrytenantId());
 			inputData.put("dtregistryUrlPrefix", sDEConfigurationProperty.getDtregistryUrlPrefix());
-
-			inputData.put("dtregistryUrl", dtregistryUrl);
+			inputData.put("dtregistryURI", dturi);
 
 			if (AppActions.CREATE.equals(action))
 				appManagement.createPackage(DT_REGISTRY, packageName, inputData);
