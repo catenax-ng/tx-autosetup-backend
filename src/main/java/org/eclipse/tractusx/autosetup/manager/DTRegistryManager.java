@@ -84,12 +84,12 @@ public class DTRegistryManager {
 				inputData.put("dtregistryUrl", localDTUrl);
 				inputData.put("dtregistryUrlWithURI", localDTUrl + dturi);
 			} else {
-				String dtregistryUrl = dnsNameURLProtocol + "://" + dnsName + "/"
-						+ sDEConfigurationProperty.getDtregistryUrlPrefix() + dturi;
+				String dtregistryUrl = dnsNameURLProtocol + "://" + dnsName + "/"+ sDEConfigurationProperty.getDtregistryUrlPrefix();
 				inputData.put("dtregistryUrl", dtregistryUrl);
 				inputData.put("dtregistryUrlWithURI", dtregistryUrl + dturi);
 			}
 
+			inputData.put("dtNeedExternalAccess", String.valueOf(!managedDTRegistryLocal));
 			inputData.put("rgdatabase", "registry");
 			inputData.put("rgdbpass", "admin@123");
 			inputData.put("rgusername", "catenax");

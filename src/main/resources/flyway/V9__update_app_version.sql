@@ -220,15 +220,15 @@ update app_tbl set expected_input_data='{
 							
 							minio.bucket-name=$\{storage.media.bucket\}
 							
-							minio.location.tobeprocessed=ToBeProcessed
+							minio.location.tobeprocessed=
 							
-							minio.location.inprogress=InProgress
+							minio.location.inprogress=/InProgress
 							
-							minio.location.success=Success
+							minio.location.success=/Success
 							
-							minio.location.partialsucess=PartialSuccess
+							minio.location.partialsucess=/PartialSuccess
 							
-							minio.location.failed=Failed"
+							minio.location.failed=/Failed"
 			}			
 	},
 	"frontend": {
@@ -266,7 +266,7 @@ update app_tbl set expected_input_data='{
 							REACT_APP_FILESIZE=268435456"
 		   }
    }
-}',  package_identifier='tx-sde-charts/sde' ,package_version='1.0.0' where app_name='SDE';
+}',  package_identifier='tx-sde-charts/sde' ,package_version='1.0.1' where app_name='SDE';
 
 
 update app_tbl set expected_input_data= '{
@@ -294,9 +294,9 @@ update app_tbl set expected_input_data= '{
 		"idpClientId" : "$\{idpClientId\}",
 		"idpIssuerUri": "$\{idpIssuerUri\}",
 		"tenantId" : "$\{bpnNumber\}",
-		"authentication": false,
+		"authentication": $\{dtNeedExternalAccess\},
         "ingress": {
-                "enabled": false,
+                "enabled": $\{dtNeedExternalAccess\},
                 "hostname": "$\{dnsName\}",
                 "annotations": {
 				      "cert-manager.io/cluster-issuer": letsencrypt-prod,
@@ -308,7 +308,7 @@ update app_tbl set expected_input_data= '{
 				},
 				"urlPrefix": /$\{dtregistryUrlPrefix\},
                 "className": "nginx",
-                "tls": false
+                "tls": $\{dtNeedExternalAccess\}
             }
     }
 }', package_version='0.3.27' where app_name='DT_REGISTRY';

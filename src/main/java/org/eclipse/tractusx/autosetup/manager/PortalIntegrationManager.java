@@ -112,12 +112,19 @@ public class PortalIntegrationManager {
 				if (technicalUserInfo != null) {
 					inputData.put("keycloakAuthenticationClientId", technicalUserInfo.getTechnicalClientId());
 					inputData.put("keycloakAuthenticationClientSecret", technicalUserInfo.getTechnicalUserSecret());
+				} else {
+					log.warn("technicalUserInfo not recieved from portal");
 				}
 
 				ClientInfo clientInfo = serviceInstanceResultResponse.getClientInfo();
 				if (clientInfo != null) {
 					inputData.put("keycloakResourceClient", clientInfo.getClientId());
+				}else {
+					log.warn("clientInfo not recieved from portal");
 				}
+				
+				autoSetupTriggerDetails.setRemark(serviceInstanceResultResponse.toJsonString());
+				
 				log.info(LogUtil.encode(tenantName) + "-" + LogUtil.encode(packageName)
 						+ "-PostServiceInstanceResultAndGetTenantSpecs created");
 			} else {

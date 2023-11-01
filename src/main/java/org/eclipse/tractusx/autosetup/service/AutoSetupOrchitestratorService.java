@@ -114,6 +114,9 @@ public class AutoSetupOrchitestratorService {
 
 	@Value("${managed.dt-registry:true}")
 	private boolean managedDtRegistry;
+	
+	@Value("${managed.dt-registry.local:true}")
+	private boolean managedDTRegistryLocal;
 
 	public String getAllInstallPackages() {
 		return kubeAppManageProxy.getAllInstallPackages();
@@ -599,8 +602,10 @@ public class AutoSetupOrchitestratorService {
 		List<Map<String, String>> processResult = new ArrayList<>();
 
 		//commentting this beause of dt is get localy managed
-		//Map<String, String> dt = extractDTResultMap(outputMap).get(0);
-		//processResult.add(dt);
+		if (managedDTRegistryLocal) {
+			Map<String, String> dt = extractDTResultMap(outputMap).get(0);
+			processResult.add(dt);
+		}
 
 		Map<String, String> edc = extractEDCResultMap(outputMap).get(0);
 		processResult.add(edc);

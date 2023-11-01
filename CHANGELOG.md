@@ -13,6 +13,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
  - Refactor DT registry local use
  
+ 
+## [1.5.4] - 2023-11-01
+
+### Removed
+ - Removal of openssh dependency
+ 
+## [1.5.3] - 2023-10-30
+
+### Changed
+ - Refactor DT registry local use
+
 ## [1.5.2] - 2023-10-27
 
 ### Added
