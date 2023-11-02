@@ -8,11 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
  - The customer already gets an email from Portal and the third-Party-provider after the successful deployment that the SDE-Service is ready to use. If the connector End2End test is unsuccessful (this might be based on the cloud communication issue), the customer will be informed about the failing connectivity. This behavior might need to be clarified for the customer. We will change this behavior in the next release.
 
 
-## [1.5.3] - 2023-10-30
+## [1.5.5] - 2023-11-02
 
 ### Changed
- - Refactor DT registry local use
- 
+ - Handle Minio user duplication
  
 ## [1.5.4] - 2023-11-01
 

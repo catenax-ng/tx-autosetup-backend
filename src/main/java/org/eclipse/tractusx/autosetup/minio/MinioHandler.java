@@ -88,8 +88,8 @@ public class MinioHandler {
 	}
 
 	@SneakyThrows
-	public void getUserInfo(String userAccessKey) {
-		minioAdminClient.getUserInfo(userAccessKey);
+	public UserInfo getUserInfo(String userAccessKey) {
+		return minioAdminClient.getUserInfo(userAccessKey);
 	}
 
 	@SneakyThrows

@@ -39,6 +39,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 
+import io.minio.admin.UserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -65,29 +66,19 @@ public class AutomaticStorageMediaSetupManager {
 				.id(UUID.randomUUID().toString()).step("STORAGE_MEDIA").build();
 		try {
 			String tenantNameNamespace = triger.getAutosetupTenantName();
-			String generateRandomPassword = PasswordGenerator.generateRandomPassword(50);
 			minioHandler.makeBucket(tenantNameNamespace);
 
-			// deleting policy before creation if exist
-			deletePolicy(tenantNameNamespace);
-			minioHandler.addCannedPolicy(tenantNameNamespace, valueReplacerUtility
-					.valueReplacer("/request-template/s3-policy-template.json", Map.of("bucket", tenantNameNamespace)));
-			
-			log.info(tenantNameNamespace + " bucket policy created successfully");
+			checkAndCreatePolicy(tenantNameNamespace);
 
-			// deleting user before creation if exist
-			String email = customerDetails.getEmail();
-			deleteUser(email);
-			minioHandler.addUser(email, generateRandomPassword, tenantNameNamespace);
-			minioHandler.assignPolicyToUser(email, tenantNameNamespace);
-			log.info(email + " user created successfully and assigned require policy as well");
+			String accessKey= checkAndCreateUserGetSecret(inputData, tenantNameNamespace, customerDetails);
+			
+			minioHandler.assignPolicyToUser(accessKey, tenantNameNamespace);
+			log.info(accessKey + " assigned '"+tenantNameNamespace+"' policy");
 
 			autoSetupTriggerDetails.setStatus(TriggerStatusEnum.SUCCESS.name());
-
 			inputData.put("storage.media.bucket", tenantNameNamespace);
 			inputData.put("storage.media.endpoint", endpoint);
-			inputData.put("storage.media.accessKey", email);
-			inputData.put("storage.media.secretKey", generateRandomPassword);
+			
 
 		} catch (Exception ex) {
 
@@ -103,6 +94,48 @@ public class AutomaticStorageMediaSetupManager {
 
 		return inputData;
 	}
+
+	@SneakyThrows
+	private String checkAndCreateUserGetSecret(Map<String, String> inputData, String tenantNameNamespace,
+			Customer customerDetails) {
+		UserInfo userInfo = null;
+		String email= customerDetails.getEmail();
+		
+		try {
+			userInfo = minioHandler.getUserInfo(email);
+		} catch (Exception e) {
+			log.info("Exception to get minio user " + e.getMessage());
+		}
+		
+		if (userInfo == null) {
+			String generateRandomPassword = PasswordGenerator.generateRandomPassword(50);
+			minioHandler.addUser(email, generateRandomPassword, tenantNameNamespace);
+			log.info(email + " user does not exist so created user");
+			inputData.put("storage.media.accessKey", email);
+			inputData.put("storage.media.secretKey", generateRandomPassword);
+			return email;
+		} else {
+			String generateAccessKey = PasswordGenerator.generateRandomPassword(20);
+			String generateRandomPassword = PasswordGenerator.generateRandomPassword(50);
+			inputData.put("storage.media.accessKey", generateAccessKey);
+			inputData.put("storage.media.secretKey", generateRandomPassword);
+			minioHandler.addUser(generateAccessKey, generateRandomPassword, tenantNameNamespace);
+			log.info(email + " user already exist with email so creating new access key");
+			return generateAccessKey;
+		}
+		
+	}
+
+	@SneakyThrows
+	private void checkAndCreatePolicy(String tenantNameNamespace) {
+		// deleting policy before creation if exist
+		deletePolicy(tenantNameNamespace);
+
+		minioHandler.addCannedPolicy(tenantNameNamespace, valueReplacerUtility
+				.valueReplacer("/request-template/s3-policy-template.json", Map.of("bucket", tenantNameNamespace)));
+		log.info(tenantNameNamespace + " bucket policy created successfully");
+	}
+	
 
 	public void deleteStorageMedia(String tenantName, String userEmail) {
 		deleteBucket(tenantName);
