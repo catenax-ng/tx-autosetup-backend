@@ -125,10 +125,10 @@ public class SDEManager {
 			inputData.put("sde.discovery.clientId", sDEConfigurationProperty.getDiscoveryClientId());
 			inputData.put("sde.discovery.clientSecret", sDEConfigurationProperty.getDiscoveryClientSecret());
 
-			inputData.put("sftpHost", "default");
+			inputData.put("sftpHost", "defaulthost");
 			inputData.put("sftpPort", "22");
-			inputData.put("sftpUsername", "default");
-			inputData.put("sftpPassword", "default");
+			inputData.put("sftpUsername", "defaultuser");
+			inputData.put("sftpPassword", "defaultpass");
 			inputData.put("sftpKey", "");
 
 			inputData.put("emailUsername", emailConfigurationProperty.getUsername());
