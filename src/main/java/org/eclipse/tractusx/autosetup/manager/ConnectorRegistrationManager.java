@@ -45,6 +45,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -89,16 +91,26 @@ public class ConnectorRegistrationManager {
 					+ "-CONNECTOR-REGISTER package creating");
 
 			file = getTestFile(inputData.get("selfsigncertificate"));
+			String subscriptionId = inputData.get("subscriptionId");
 
 			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-			body.add("name", customerDetails.getOrganizationName());
+			String tenantNameNamespace = triger.getAutosetupTenantName();
+			body.add("name", tenantNameNamespace);
 			body.add("connectorUrl", inputData.get("controlPlaneEndpoint"));
 			body.add("location", customerDetails.getCountry());
-			body.add("subscriptionId", inputData.get("subscriptionId"));
+			body.add("subscriptionId", subscriptionId);
 			Map<String, String> header = new HashMap<>();
 			header.put("Authorization", "Bearer " + getKeycloakToken());
 
-			String connectorId = portalIntegrationProxy.manageConnector(connectorRegistrationUrl, header, body);
+			String connectorId = checkSubcriptionHaveConnectorRegister(header, subscriptionId);
+
+			if (StringUtils.isNotBlank(connectorId)) {
+				Map<String, String> updateBody = new HashMap<>();
+				updateBody.put("connectorUrl", inputData.get("controlPlaneEndpoint"));
+				portalIntegrationProxy.updateRegisterConnectorUrl(connectorRegistrationUrl, header, updateBody);
+			} else {
+				connectorId = portalIntegrationProxy.manageConnector(connectorRegistrationUrl, header, body);
+			}
 
 			log.info(LogUtil.encode(tenantName) + "-" + LogUtil.encode(packageName)
 					+ "-CONNECTOR-REGISTER package created");
@@ -147,6 +159,51 @@ public class ConnectorRegistrationManager {
 
 	}
 
+	@SneakyThrows
+	private String checkSubcriptionHaveConnectorRegister(Map<String, String> header, String subscriptionId) {
+
+		try {
+			JsonNode subcriptionWithConnectors = portalIntegrationProxy
+					.getSubcriptionWithConnectors(connectorRegistrationUrl, header, true);
+
+			if (subcriptionWithConnectors != null && subcriptionWithConnectors.isArray()) {
+				for (JsonNode jsonNode : subcriptionWithConnectors) {
+
+					String remoteSubscriptionId = getValueFromJsonNode(jsonNode, "subscriptionId");
+
+					if (subscriptionId.equalsIgnoreCase(remoteSubscriptionId)) {
+
+						JsonNode connectorIds = getArrayNodeFromJsonNode(jsonNode, "connectorIds");
+
+						if (connectorIds != null && connectorIds.isArray() && connectorIds.size() > 0)
+							return connectorIds.get(0).asText();
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("Error in checkSubcriptionHaveConnectorRegister or not " + e.getMessage());
+		}
+
+		return null;
+	}
+
+	@SneakyThrows
+	private String getValueFromJsonNode(JsonNode appInstanceResultAndGetTenantSpecs, String propertyId) {
+		if (appInstanceResultAndGetTenantSpecs != null && appInstanceResultAndGetTenantSpecs.get(propertyId) != null)
+			return appInstanceResultAndGetTenantSpecs.get(propertyId).asText();
+		else
+			return "";
+	}
+
+	@SneakyThrows
+	private JsonNode getArrayNodeFromJsonNode(JsonNode jsonnode, String propertyId) {
+		if (jsonnode != null && jsonnode.get(propertyId) != null)
+			return jsonnode.get(propertyId);
+		else
+			return null;
+	}
+
 	@Retryable(retryFor = {
 			ServiceException.class }, maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "#{${retry.backOffDelay}}"))
 	public Map<String, String> deleteConnector(SelectedTools tool, Map<String, String> inputData,
@@ -168,7 +225,7 @@ public class ConnectorRegistrationManager {
 
 				autoSetupTriggerDetails.setStatus(TriggerStatusEnum.SUCCESS.name());
 				portalIntegrationProxy.deleteConnector(connectorRegistrationUrl, header, connectorId);
-				
+
 				log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-CONNECTOR-DELETE  deleted");
 
 			} else
