@@ -42,7 +42,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          image-ref: "tractusx/managed-service-orchestrator:latest"
+          image-ref: "catenax-ng/tx-managed-service-orchestrator/managed-service-orchestrator:image-23.12"
           format: "sarif"
           output: "trivy-results.sarif"
           vuln-type: "os,library"
