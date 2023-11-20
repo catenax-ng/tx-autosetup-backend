@@ -38,14 +38,14 @@ import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultRequest;
 import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultResponse;
 import org.eclipse.tractusx.autosetup.portal.model.TechnicalUserInfo;
 import org.eclipse.tractusx.autosetup.portal.proxy.PortalIntegrationProxy;
+import org.eclipse.tractusx.autosetup.utility.JsonObjectProcessingUtility;
+import org.eclipse.tractusx.autosetup.utility.KeyCloakTokenProxyUtitlity;
 import org.eclipse.tractusx.autosetup.utility.LogUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -62,6 +62,8 @@ public class PortalIntegrationManager {
 	private final PortalIntegrationProxy portalIntegrationProxy;
 
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
+	
+	private final KeyCloakTokenProxyUtitlity keyCloakTokenProxyUtitlity;
 
 	@Value("${portal.url}")
 	private URI portalUrl;
@@ -99,7 +101,7 @@ public class PortalIntegrationManager {
 			inputData.put("applicationURL", applicationURL);
 
 			Map<String, String> header = new HashMap<>();
-			header.put("Authorization", "Bearer " + getKeycloakToken());
+			header.put("Authorization", "Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
 			ServiceInstanceResultRequest serviceInstanceResultRequest = ServiceInstanceResultRequest.builder()
 					.requestId(subscriptionId).offerUrl(applicationURL).build();
@@ -177,8 +179,8 @@ public class PortalIntegrationManager {
 			JsonNode appInstanceResultAndGetTenantSpecs = portalIntegrationProxy
 					.getAppInstanceResultAndGetTenantSpecs(portalUrl, header, offerId, subscriptionId);
 
-			String appid = getValueFromJsonNode(appInstanceResultAndGetTenantSpecs, "appInstanceId");
-			String offerSubscriptionStatus = getValueFromJsonNode(appInstanceResultAndGetTenantSpecs,
+			String appid = JsonObjectProcessingUtility.getValueFromJsonNode(appInstanceResultAndGetTenantSpecs, "appInstanceId");
+			String offerSubscriptionStatus = JsonObjectProcessingUtility.getValueFromJsonNode(appInstanceResultAndGetTenantSpecs,
 					"offerSubscriptionStatus");
 			if ((StringUtils.isNotBlank(offerSubscriptionStatus) || "ACTIVE".equalsIgnoreCase(offerSubscriptionStatus))
 					&& StringUtils.isNotBlank(appid)) {
@@ -210,9 +212,9 @@ public class PortalIntegrationManager {
 			JsonNode serviceInstanceResultAndGetTenantSpecs = portalIntegrationProxy
 					.getServiceInstanceResultAndGetTenantSpecs(portalUrl, header, offerId, subscriptionId);
 
-			String offerSubscriptionStatus = getValueFromJsonNode(serviceInstanceResultAndGetTenantSpecs,
+			String offerSubscriptionStatus = JsonObjectProcessingUtility.getValueFromJsonNode(serviceInstanceResultAndGetTenantSpecs,
 					"offerSubscriptionStatus");
-			String appid = getValueFromJsonNode(serviceInstanceResultAndGetTenantSpecs, "appInstanceId");
+			String appid = JsonObjectProcessingUtility.getValueFromJsonNode(serviceInstanceResultAndGetTenantSpecs, "appInstanceId");
 
 			if ((StringUtils.isNotBlank(offerSubscriptionStatus) || "ACTIVE".equalsIgnoreCase(offerSubscriptionStatus))
 					&& StringUtils.isNotBlank(appid)) {
@@ -244,8 +246,8 @@ public class PortalIntegrationManager {
 			JsonNode technicalUserDetails = portalIntegrationProxy.getTechnicalUserDetails(portalUrl, header,
 					subscriptionId);
 
-			return TechnicalUserInfo.builder().technicalClientId(getValueFromJsonNode(technicalUserDetails, "clientId"))
-					.technicalUserSecret(getValueFromJsonNode(technicalUserDetails, "secret")).build();
+			return TechnicalUserInfo.builder().technicalClientId(JsonObjectProcessingUtility.getValueFromJsonNode(technicalUserDetails, "clientId"))
+					.technicalUserSecret(JsonObjectProcessingUtility.getValueFromJsonNode(technicalUserDetails, "secret")).build();
 		} catch (Exception e) {
 			log.error("Error in read existing TechnicalUserInfo from portal " + e.getMessage());
 		}
@@ -253,28 +255,5 @@ public class PortalIntegrationManager {
 
 	}
 
-	@SneakyThrows
-	private String getValueFromJsonNode(JsonNode appInstanceResultAndGetTenantSpecs, String propertyId) {
-		if (appInstanceResultAndGetTenantSpecs != null && appInstanceResultAndGetTenantSpecs.get(propertyId) != null)
-			return appInstanceResultAndGetTenantSpecs.get(propertyId).asText();
-		else
-			return "";
-	}
-
-	@SneakyThrows
-	private String getKeycloakToken() {
-
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		body.add("grant_type", "client_credentials");
-		body.add("client_id", clientId);
-		body.add("client_secret", clientSecret);
-		var resultBody = portalIntegrationProxy.readAuthToken(tokenURI, body);
-
-		if (resultBody != null) {
-			return resultBody.getAccessToken();
-		}
-		return null;
-
-	}
 
 }

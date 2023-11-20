@@ -36,6 +36,8 @@ import org.eclipse.tractusx.autosetup.exception.ServiceException;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
 import org.eclipse.tractusx.autosetup.portal.proxy.PortalIntegrationProxy;
+import org.eclipse.tractusx.autosetup.utility.JsonObjectProcessingUtility;
+import org.eclipse.tractusx.autosetup.utility.KeyCloakTokenProxyUtitlity;
 import org.eclipse.tractusx.autosetup.utility.LogUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
@@ -57,6 +59,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ConnectorRegistrationManager {
 
+	private static final String SUBSCRIPTION_ID = "subscriptionId";
+
 	private static final String ACTIVE = "ACTIVE";
 
 	@Value("${connectorregister.url}")
@@ -73,6 +77,7 @@ public class ConnectorRegistrationManager {
 
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
 	private final PortalIntegrationProxy portalIntegrationProxy;
+	private final KeyCloakTokenProxyUtitlity keyCloakTokenProxyUtitlity;
 
 	@Retryable(retryFor = {
 			ServiceException.class }, maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "#{${retry.backOffDelay}}"))
@@ -91,18 +96,19 @@ public class ConnectorRegistrationManager {
 					+ "-CONNECTOR-REGISTER package creating");
 
 			file = getTestFile(inputData.get("selfsigncertificate"));
-			String subscriptionId = inputData.get("subscriptionId");
+			String subscriptionIdVal = inputData.get(SUBSCRIPTION_ID);
 
 			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 			String tenantNameNamespace = triger.getAutosetupTenantName();
 			body.add("name", tenantNameNamespace);
 			body.add("connectorUrl", inputData.get("controlPlaneEndpoint"));
 			body.add("location", customerDetails.getCountry());
-			body.add("subscriptionId", subscriptionId);
+			body.add(SUBSCRIPTION_ID, subscriptionIdVal);
 			Map<String, String> header = new HashMap<>();
-			header.put("Authorization", "Bearer " + getKeycloakToken());
+			header.put("Authorization",
+					"Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
-			String connectorId = checkSubcriptionHaveConnectorRegister(header, subscriptionId);
+			String connectorId = checkSubcriptionHaveConnectorRegister(header, subscriptionIdVal);
 
 			if (StringUtils.isNotBlank(connectorId)) {
 				Map<String, String> updateBody = new HashMap<>();
@@ -169,11 +175,13 @@ public class ConnectorRegistrationManager {
 			if (subcriptionWithConnectors != null && subcriptionWithConnectors.isArray()) {
 				for (JsonNode jsonNode : subcriptionWithConnectors) {
 
-					String remoteSubscriptionId = getValueFromJsonNode(jsonNode, "subscriptionId");
+					String remoteSubscriptionId = JsonObjectProcessingUtility.getValueFromJsonNode(jsonNode,
+							SUBSCRIPTION_ID);
 
 					if (subscriptionId.equalsIgnoreCase(remoteSubscriptionId)) {
 
-						JsonNode connectorIds = getArrayNodeFromJsonNode(jsonNode, "connectorIds");
+						JsonNode connectorIds = JsonObjectProcessingUtility.getArrayNodeFromJsonNode(jsonNode,
+								"connectorIds");
 
 						if (connectorIds != null && connectorIds.isArray() && connectorIds.size() > 0)
 							return connectorIds.get(0).asText();
@@ -186,22 +194,6 @@ public class ConnectorRegistrationManager {
 		}
 
 		return null;
-	}
-
-	@SneakyThrows
-	private String getValueFromJsonNode(JsonNode appInstanceResultAndGetTenantSpecs, String propertyId) {
-		if (appInstanceResultAndGetTenantSpecs != null && appInstanceResultAndGetTenantSpecs.get(propertyId) != null)
-			return appInstanceResultAndGetTenantSpecs.get(propertyId).asText();
-		else
-			return "";
-	}
-
-	@SneakyThrows
-	private JsonNode getArrayNodeFromJsonNode(JsonNode jsonnode, String propertyId) {
-		if (jsonnode != null && jsonnode.get(propertyId) != null)
-			return jsonnode.get(propertyId);
-		else
-			return null;
 	}
 
 	@Retryable(retryFor = {
@@ -221,7 +213,8 @@ public class ConnectorRegistrationManager {
 				log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-CONNECTOR-DELETE deleting");
 
 				Map<String, String> header = new HashMap<>();
-				header.put("Authorization", "Bearer " + getKeycloakToken());
+				header.put("Authorization",
+						"Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
 				autoSetupTriggerDetails.setStatus(TriggerStatusEnum.SUCCESS.name());
 				portalIntegrationProxy.deleteConnector(connectorRegistrationUrl, header, connectorId);
@@ -245,21 +238,6 @@ public class ConnectorRegistrationManager {
 		}
 
 		return inputData;
-
-	}
-
-	@SneakyThrows
-	public String getKeycloakToken() {
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		body.add("grant_type", "client_credentials");
-		body.add("client_id", clientId);
-		body.add("client_secret", clientSecret);
-		var resultBody = portalIntegrationProxy.readAuthToken(tokenURI, body);
-
-		if (resultBody != null) {
-			return resultBody.getAccessToken();
-		}
-		return null;
 
 	}
 
