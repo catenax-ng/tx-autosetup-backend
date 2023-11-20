@@ -58,7 +58,6 @@ public class VaultManager {
 	public static final String CERTIFICATE_PRIVATE_KEY = "certificate-private-key";
 	private final VaultAppManageProxy vaultManagerProxy;
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
-	private final OpenSSLClientManager openSSLClientManager;
 
 	@Value("${vault.url}")
 	private String valutURL;
@@ -94,15 +93,13 @@ public class VaultManager {
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, inputData.get("selfsigncertificateprivatekey"));
 			uploadSecrete(tenantNameNamespace, CERTIFICATE_PRIVATE_KEY, tenantVaultSecret);
-			
+
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, inputData.get("keycloakAuthenticationClientSecret"));
 			uploadSecrete(tenantNameNamespace, CLIENT_SECRET, tenantVaultSecret);
 
-			String encryptionkeysalias = openSSLClientManager.executeCommand("openssl rand -base64 16");
 			tenantVaultSecret = new HashMap<>();
-			encryptionkeysalias = encryptionkeysalias.replace("\n", "");
-			tenantVaultSecret.put(CONTENT, encryptionkeysalias);
+			tenantVaultSecret.put(CONTENT, "c3RhbmRhcmRfZW5jX2tleQo=");
 			uploadSecrete(tenantNameNamespace, ENCRYPTIONKEYS, tenantVaultSecret);
 
 			inputData.put(DAPS_CERT, DAPS_CERT);
@@ -164,9 +161,8 @@ public class VaultManager {
 			deleteSecret(tenantNameNamespace, CERTIFICATE_PRIVATE_KEY);
 			deleteSecret(tenantNameNamespace, ENCRYPTIONKEYS);
 			deleteSecret(tenantNameNamespace, CLIENT_SECRET);
-			
-			log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-Vault deleted");
 
+			log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-Vault deleted");
 		} catch (Exception ex) {
 
 			log.error("VaultManager failed retry attempt: : {}",
@@ -174,7 +170,8 @@ public class VaultManager {
 
 			autoSetupTriggerDetails.setStatus(TriggerStatusEnum.FAILED.name());
 			autoSetupTriggerDetails.setRemark(ex.getMessage());
-			throw new ServiceException("VaultManager Oops! We have an exception - " + ex.getMessage());
+			throw new ServiceException("VaultManager Oops! We have an exception - " + ex.getMessage() + ", Cause: "
+					+ LogUtil.getCause(ex));
 
 		} finally {
 			autoSetupTriggerManager.saveTriggerDetails(autoSetupTriggerDetails, triger);
@@ -183,7 +180,7 @@ public class VaultManager {
 
 	public void deleteSecret(String tenantName, String secretePath) throws URISyntaxException {
 
-		String valutURLwithpath = valutURL + V1_SECRET_DATA + tenantName+ "/data/" + secretePath;
+		String valutURLwithpath = valutURL + V1_SECRET_DATA + tenantName + "/data/" + secretePath;
 		URI url = new URI(valutURLwithpath);
 		vaultManagerProxy.deleteKeyandValue(url);
 
