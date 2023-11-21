@@ -99,7 +99,7 @@ public class VaultManager {
 			uploadSecrete(tenantNameNamespace, CLIENT_SECRET, tenantVaultSecret);
 
 			tenantVaultSecret = new HashMap<>();
-			tenantVaultSecret.put(CONTENT, "c3RhbmRhcmRfZW5jX2tleQo=");
+			tenantVaultSecret.put(CONTENT, "FIC4gLMpbuI/tXkhSt5EBQ==");
 			uploadSecrete(tenantNameNamespace, ENCRYPTIONKEYS, tenantVaultSecret);
 
 			inputData.put(DAPS_CERT, DAPS_CERT);
