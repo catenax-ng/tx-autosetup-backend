@@ -137,7 +137,7 @@ public class SDEManager {
 			inputData.put("emailPort", emailConfigurationProperty.getPort());
 			inputData.put("emailTo", customerDetails.getEmail());
 			inputData.put("emailCC", emailConfigurationProperty.getReplytoAddress());
-			inputData.put("emailFrom", "SDE notification<noreply@sde.com>");
+			inputData.put("emailFrom", customerDetails.getOrganizationName() +" SDE notification<noreply@sde.com>");
 			inputData.put("emailReply", emailConfigurationProperty.getReplytoAddress());
 
 			String packageName = tool.getLabel();

@@ -468,6 +468,7 @@ public class AutoSetupOrchitestratorService {
 		emailContent.put(ORGNAME, customer.getOrganizationName());
 		emailContent.put(CCEMAIL, technicalEmail);
 		emailContent.put(CONTENT, generateEmailTable);
+		
 		if (manualUpdate || !isTestConnectivityTestSuccess) {
 			emailContent.put(TOEMAIL, technicalEmail);
 			emailManager.sendEmail(emailContent, "SDE Application Deployed Successfully", SUCCESS_HTML_TEMPLATE);
