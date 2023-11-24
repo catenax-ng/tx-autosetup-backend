@@ -57,7 +57,7 @@ spec:
             - containerPort: {{ .Values.portContainer }}
           envFrom:
             - secretRef:
-                name: {{ .Values.secretRef }}
+                name: mso-secret
           env:
             - name: SPRING_JPA_HIBERNATE_DDL-AUTO
               value: "update"
