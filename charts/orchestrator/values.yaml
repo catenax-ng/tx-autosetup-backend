@@ -20,7 +20,7 @@
 
     # -- Number of Replicas for pods
 replicaCount: 1
-secretRef: ""
+secretRef: "secret-values"
 image:
     # -- Image to use for deploying an application
   repository: tractusx/managed-service-orchestrator
