@@ -43,7 +43,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.12.0
         with:
           # Path to Docker image
-          image-ref: "ghcr.io/catenax-ng/tx-autosetup-backend/autosetup:1.5.4-open-test"
+          image-ref: "ghcr.io/catenax-ng/tx-autosetup-backend/autosetup:1.5.4-open-test2"
           format: "sarif"
           output: "trivy-results.sarif"
           vuln-type: "os,library"
