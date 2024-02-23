@@ -36,11 +36,6 @@ EmailConfig.java
 
 maven.deps
 
-### Helm ###
-# Chart dependencies
-**/charts/*.tgz
-**/Chart.lock
-
 ### Visual Studio Code ###
 .vscode/
 
