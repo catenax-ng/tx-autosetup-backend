@@ -50,4 +50,4 @@ dependencies:
   - condition: postgresql.enabled
     name: postgresql
     repository: https://charts.bitnami.com/bitnami
-    version: 12.x.x
+    version: 13.x.x
