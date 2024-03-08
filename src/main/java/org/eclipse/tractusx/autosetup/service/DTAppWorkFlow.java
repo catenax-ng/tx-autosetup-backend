@@ -34,9 +34,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DTAppWorkFlow {
 
 	private final DTRegistryManager dtregistryManager;
@@ -52,8 +54,13 @@ public class DTAppWorkFlow {
 				dtregistryManager.managePackage(customerDetails, workflowAction, tool, inputConfiguration, triger));
 
 		if (!manualUpdate) {
-			dtregistryManager.dtRegistryRegistrationInEDC(customerDetails, tool,
-					inputConfiguration, triger);
+			try {
+				dtregistryManager.dtRegistryRegistrationInEDC(customerDetails, tool, inputConfiguration, triger);
+			} catch (Exception e) {
+				String errorMsg = "Unable to complete asset creation in managed DT registry, autosetup process not aborting "
+						+ e.getMessage();
+				log.error(errorMsg);
+			}
 		}
 
 		return inputConfiguration;

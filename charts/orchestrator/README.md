@@ -24,7 +24,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | autoscaling.enabled | bool | `false` |  |
 | image.pullPolicy | string | `"Always"` | Set the Image Pull Policy |
-| image.repository | string | `"tractusx/managed-service-orchestrator"` | Image to use for deploying an application |
+| image.repository | string | `"ghcr.io/catenax-ng/tx-autosetup-backend/autosetup"` | Image to use for deploying an application |
 | image.tag | string | `""` | Image tage is defined in chart appVersion |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` | Annotations to add to the ingress |
@@ -48,6 +48,13 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | postgresql.auth.username | string | `"postgres"` |  |
 | postgresql.enabled | bool | `true` |  |
 | postgresql.fullnameOverride | string | `"postgresql"` |  |
+| postgresql.auth.database | string | `""` |  |
+| postgresql.auth.existingSecret | string | `""` |  |
+| postgresql.auth.secretKeys.adminPasswordKey | string | `""` |  |
+| postgresql.auth.secretKeys.userPasswordKey | string | `""` |  |
+| postgresql.auth.username | string | `""` |  |
+| postgresql.enabled | bool | `true` | Enable the dependency postgres database |
+| postgresql.metrics.containerSecurityContext.enabled | bool | `false` |  |
 | probe.endpoint | string | `"/api/healthz"` |  |
 | properties.connectorTestServiceUrl | string | `"default"` |  |
 | properties.connectorregisterUrl | string | `"default"` |  |
@@ -126,7 +133,6 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | resources.limits.memory | string | `"2Gi"` | set a maximum amount of allows memory utilization by specifying a limit on the container. |
 | resources.requests.cpu | string | `"400m"` | sets the minimum amount of CPU required for the container |
 | resources.requests.memory | string | `"2Gi"` | set a minimum amount of allows memory utilization by specifying a limit on the container. |
-| secretRef | string | `"managed-service-orchestrator"` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` | Controls whether a process can gain more privilege |
 | securityContext.runAsNonRoot | bool | `true` |  |
 | securityContext.runAsUser | int | `1000` |  |

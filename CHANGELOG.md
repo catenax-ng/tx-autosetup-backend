@@ -6,33 +6,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-## [1.5.4] - 2024-03-06
+
+## [1.5.7] - 2024-03-08
 ### Fixed
 - Fixed CVE-2024-22234 and CVE-2024-22243
 - Fixed Trivy security issue CVE-2024-1597
-
-### Changed
-- Update Spring Boot to version 3.2.3
-- Update commons-text, commons-io, commons-compres, bcprov, bcpkix, snappy-java, jakarta.activation-api
-
-## [1.5.3] - 2024-02-19
-### Fixed
-- Fixed trivy security issues CVE-2023-34053, CVE-2023-46589, CVE-2023-6378
-
-
-## [1.5.2] - 2023-11-24
-
-### Fixed
-
 - Fix helm repo name in `INSTALL.md` (#89)
 - Fix link to temurin repository in "Notice for Docker images" (#90)
 - Remove default connection test, that prevented helm test to succeed (#92)
 - Fix Chart names in helm test step (#95)
 
+### Changed
+- Update Spring Boot to version 3.2.3
+- Update commons-text, commons-io, commons-compres, bcprov, bcpkix, snappy-java, jakarta.activation-api
+- Fixed trivy security issues CVE-2023-34053, CVE-2023-46589, CVE-2023-6378
 
-## [1.5.1] - 2023-11-17
+## [1.5.6] - 2023-11-21
 
-[App release 1.5.0](https://github.com/eclipse-tractusx/managed-service-orchestrator/releases/tag/v1.5.1)
+### Changed
+- Handle minio duplication
+- Avoid managed service orchestrator failure in case DT asset creation failed
+- Support portal autosetup changes
+
+## [1.5.5] - 2023-11-02
+
+### Changed
+ - Handle Minio user duplication
+ 
+## [1.5.4] - 2023-11-01
+
+### Removed
+ - Removal of openssh dependency
+ 
+## [1.5.3] - 2023-10-30
+
+### Changed
+ - Refactor DT registry local use
+
+## [1.5.2] - 2023-10-27
+
+### Added
+ - Minio support working version
+ - Email send refactor
+ - Refactor s3 policy template use
+
+## [1.5.1] - 2023-10-16
 
 ### Changed
  - Update DT asset creation for oauth secret information
