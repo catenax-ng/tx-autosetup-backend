@@ -24,7 +24,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | autoscaling.enabled | bool | `false` |  |
 | image.pullPolicy | string | `"Always"` | Set the Image Pull Policy |
-| image.repository | string | `"tractusx/managed-service-orchestrator"` | Image to use for deploying an application |
+| image.repository | string | `"ghcr.io/catenax-ng/tx-autosetup-backend/autosetup"` | Image to use for deploying an application |
 | image.tag | string | `""` | Image tage is defined in chart appVersion |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` | Annotations to add to the ingress |
