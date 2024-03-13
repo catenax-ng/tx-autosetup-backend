@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 
-## [1.5.7] - 2024-03-08
+## [1.5.7] - 2024-03-13
 ### Fixed
 - Fixed CVE-2024-22234 and CVE-2024-22243
 - Fixed Trivy security issue CVE-2024-1597
