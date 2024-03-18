@@ -1,6 +1,6 @@
 # managed-service-orchestrator
 
-![Version: 1.5.7](https://img.shields.io/badge/Version-1.5.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.5.7](https://img.shields.io/badge/AppVersion-1.5.7-informational?style=flat-square)
+![Version: 1.5.8](https://img.shields.io/badge/Version-1.5.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.5.7](https://img.shields.io/badge/AppVersion-1.5.7-informational?style=flat-square)
 
 This service will help service provider to set up DFT/SDE with EDC and EDC as service in service provider environment.
 
@@ -12,7 +12,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.bitnami.com/bitnami | postgresql | 11.x.x |
+| https://charts.bitnami.com/bitnami | postgresql | 12.x.x |
 
 ## Values
 
@@ -24,7 +24,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | autoscaling.enabled | bool | `false` |  |
 | image.pullPolicy | string | `"Always"` | Set the Image Pull Policy |
-| image.repository | string | `"ghcr.io/catenax-ng/tx-autosetup-backend/autosetup"` | Image to use for deploying an application |
+| image.repository | string | `"ghcr.io/catenax-ng/tx-managed-service-orchestrator/autosetup"` | Image to use for deploying an application |
 | image.tag | string | `""` | Image tage is defined in chart appVersion |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` | Annotations to add to the ingress |
