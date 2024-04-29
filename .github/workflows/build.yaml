@@ -25,7 +25,7 @@ name: build
 on:
   push:
     branches:
-      - main
+      - closeRelease
     paths:
       - './**'
     tags:
@@ -33,7 +33,7 @@ on:
       - 'v*.*.*-*'
   pull_request:
     branches:
-      - main
+      - closeRelease
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
