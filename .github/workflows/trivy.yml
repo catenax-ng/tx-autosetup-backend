@@ -22,7 +22,7 @@ name: "Trivy"
 on:
   push:
     branches: 
-     - main
+     - closeRelease
   schedule:
     # Once a day
     - cron: "0 0 * * *"   
