@@ -24,7 +24,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].weight | int | `100` |  |
 | autoscaling.enabled | bool | `false` |  |
 | image.pullPolicy | string | `"Always"` | Set the Image Pull Policy |
-| image.repository | string | `"tractusx/managed-service-orchestrator"` | Image to use for deploying an application |
+| image.repository | string | `"ghcr.io/catenax-ng/tx-managed-service-orchestrator/autosetup"` | Image to use for deploying an application |
 | image.tag | string | `""` | Image tage is defined in chart appVersion |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` | Annotations to add to the ingress |
@@ -40,82 +40,14 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `2000` |  |
 | portContainer | int | `9999` |  |
-| postgresql.auth.database | string | `"testdb"` |  |
+| postgresql.auth.database | string | `""` |  |
 | postgresql.auth.existingSecret | string | `""` |  |
-| postgresql.auth.password | string | `""` |  |
-| postgresql.auth.port | int | `5432` |  |
-| postgresql.auth.postgresPassword | string | `""` |  |
-| postgresql.auth.username | string | `"testuser"` |  |
-| postgresql.enabled | bool | `true` |  |
-| postgresql.fullnameOverride | string | `"postgresql"` |  |
+| postgresql.auth.secretKeys.adminPasswordKey | string | `""` |  |
+| postgresql.auth.secretKeys.userPasswordKey | string | `""` |  |
+| postgresql.auth.username | string | `""` |  |
+| postgresql.enabled | bool | `true` | Enable the dependency postgres database |
+| postgresql.metrics.containerSecurityContext.enabled | bool | `false` |  |
 | probe.endpoint | string | `"/api/healthz"` |  |
-| properties.connectorTestServiceUrl | string | `"default"` |  |
-| properties.connectorregisterUrl | string | `"default"` |  |
-| properties.connectorregisterkeycloakclientId | string | `"default"` |  |
-| properties.connectorregisterkeycloakclientSecret | string | `"default"` |  |
-| properties.connectorregisterkeycloaktokenURI | string | `"default"` |  |
-| properties.dapsJksUrl | string | `"default"` |  |
-| properties.dapsTokenUrl | string | `"default"` |  |
-| properties.dapsUrl | string | `"default"` |  |
-| properties.dnsname | string | `"default"` |  |
-| properties.dnsnameProtocol | string | `"default"` |  |
-| properties.edc_miwUrl | string | `"default"` |  |
-| properties.edc_ssi_authorityId | string | `"default"` |  |
-| properties.emailpassword | string | `"default"` |  |
-| properties.emailuser | string | `"default"` |  |
-| properties.keycloakAuthserverUrl | string | `"default"` |  |
-| properties.keycloakBearerOnly | string | `"true"` |  |
-| properties.keycloakClientid | string | `"default"` |  |
-| properties.keycloakRealm | string | `"default"` |  |
-| properties.keycloakResource | string | `"default"` |  |
-| properties.keycloakSslRequired | string | `"external"` |  |
-| properties.keycloakUseResourceRoleMappings | string | `"true"` |  |
-| properties.kubeappsToken | string | `"default"` |  |
-| properties.kubeappsUrl | string | `"default"` |  |
-| properties.mail_from | string | `"default"` |  |
-| properties.mail_to | string | `"default"` |  |
-| properties.manual_connector_registration | string | `"false"` |  |
-| properties.manualupdate | string | `"true"` |  |
-| properties.password | string | `"default"` |  |
-| properties.portalclientid | string | `"default"` |  |
-| properties.portalclientsecret | string | `"default"` |  |
-| properties.portalemail | string | `"default"` |  |
-| properties.portaltokenurl | string | `"default"` |  |
-| properties.portalurl | string | `"default"` |  |
-| properties.postgres-password | string | `"default"` |  |
-| properties.resourceServerIssuer | string | `"default"` |  |
-| properties.sde_bpndiscovery_hostname | string | `"default"` |  |
-| properties.sde_connector_discovery_clientId | string | `"default"` |  |
-| properties.sde_connector_discovery_clientSecret | string | `"default"` |  |
-| properties.sde_connector_discovery_token_url | string | `"default"` |  |
-| properties.sde_digital_twins_authentication_url | string | `"default"` |  |
-| properties.sde_digital_twins_hostname | string | `"default"` |  |
-| properties.sde_discovery_authentication_url | string | `"default"` |  |
-| properties.sde_discovery_clientId | string | `"default"` |  |
-| properties.sde_discovery_clientSecret | string | `"default"` |  |
-| properties.sde_discovery_grantType | string | `"default"` |  |
-| properties.sde_dtregistry_url_prefix | string | `"default"` |  |
-| properties.sde_dtregistryidp_client_id | string | `"default"` |  |
-| properties.sde_dtregistrytenant_id | string | `"default"` |  |
-| properties.sde_keycloak_auth | string | `"default"` |  |
-| properties.sde_keycloak_realm | string | `"default"` |  |
-| properties.sde_keycloak_tokenUrl | string | `"default"` |  |
-| properties.sde_partner_pool_clientId | string | `"default"` |  |
-| properties.sde_partner_pool_clientSecret | string | `"default"` |  |
-| properties.sde_partner_pool_hostname | string | `"default"` |  |
-| properties.sde_portal_backend_authentication_url | string | `"default"` |  |
-| properties.sde_portal_backend_clientId | string | `"default"` |  |
-| properties.sde_portal_backend_clientSecret | string | `"default"` |  |
-| properties.sde_portal_backend_hostname | string | `"default"` |  |
-| properties.sde_resource_server_issuer | string | `"default"` |  |
-| properties.smtp_auth | string | `"true"` |  |
-| properties.smtp_host | string | `"default"` |  |
-| properties.smtp_port | string | `"default"` |  |
-| properties.smtp_tls_enable | string | `"true"` |  |
-| properties.targetCluster | string | `"default"` |  |
-| properties.targetNamesapce | string | `"default"` |  |
-| properties.vaultToken | string | `"default"` |  |
-| properties.vaultUrl | string | `"default"` |  |
 | readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.initialDelaySeconds | int | `60` |  |
 | readinessProbe.periodSeconds | int | `10` |  |
@@ -126,7 +58,7 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | resources.limits.memory | string | `"2Gi"` | set a maximum amount of allows memory utilization by specifying a limit on the container. |
 | resources.requests.cpu | string | `"400m"` | sets the minimum amount of CPU required for the container |
 | resources.requests.memory | string | `"2Gi"` | set a minimum amount of allows memory utilization by specifying a limit on the container. |
-| secretRef | string | `"managed-service-orchestrator"` |  |
+| secretRef | string | `""` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` | Controls whether a process can gain more privilege |
 | securityContext.runAsNonRoot | bool | `true` |  |
 | securityContext.runAsUser | int | `1000` |  |

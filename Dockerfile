@@ -34,7 +34,6 @@ COPY ./src ./src
 RUN mvn clean install -Dmaven.test.skip=true 
 
 FROM eclipse-temurin:17.0.11_9-jdk
-
 ENV USER=autosetupuser
 ENV UID=1000
 ENV GID=1000
