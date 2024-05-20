@@ -1,6 +1,6 @@
 # managed-service-orchestrator
 
-![Version: 1.5.8](https://img.shields.io/badge/Version-1.5.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.5.7](https://img.shields.io/badge/AppVersion-1.5.7-informational?style=flat-square)
+![Version: 1.5.8](https://img.shields.io/badge/Version-1.5.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.5.5](https://img.shields.io/badge/AppVersion-1.5.5-informational?style=flat-square)
 
 This service will help service provider to set up DFT/SDE with EDC and EDC as service in service provider environment.
 
@@ -40,13 +40,14 @@ This service will help service provider to set up DFT/SDE with EDC and EDC as se
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `2000` |  |
 | portContainer | int | `9999` |  |
-| postgresql.auth.database | string | `""` |  |
+| postgresql.auth.database | string | `"testdb"` |  |
 | postgresql.auth.existingSecret | string | `""` |  |
-| postgresql.auth.secretKeys.adminPasswordKey | string | `""` |  |
-| postgresql.auth.secretKeys.userPasswordKey | string | `""` |  |
-| postgresql.auth.username | string | `""` |  |
-| postgresql.enabled | bool | `true` | Enable the dependency postgres database |
-| postgresql.metrics.containerSecurityContext.enabled | bool | `false` |  |
+| postgresql.auth.password | string | `""` |  |
+| postgresql.auth.port | int | `5432` |  |
+| postgresql.auth.postgresPassword | string | `""` |  |
+| postgresql.auth.username | string | `"testuser"` |  |
+| postgresql.enabled | bool | `true` |  |
+| postgresql.fullnameOverride | string | `"postgresql"` |  |
 | probe.endpoint | string | `"/api/healthz"` |  |
 | readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.initialDelaySeconds | int | `60` |  |
