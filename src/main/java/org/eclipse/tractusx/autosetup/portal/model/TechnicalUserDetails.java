@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2022,2024 T-Systems International GmbH
- * Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 T-Systems International GmbH
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,38 +20,27 @@
 
 package org.eclipse.tractusx.autosetup.portal.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ServiceInstanceResultResponse {
-	
-	private String id;
-	private String offerSubscriptionStatus;
+public class TechnicalUserDetails {
+
+	private String serviceAccountId;
+	private String clientId;
 	private String name;
-	private String customer;
-	private String bpn;
-	private List<String> contact;
-	private List<TechnicalUsers> technicalUserData;
-	private String tenantUrl;
-	private String appInstanceId;
+	private String description;
+	private String authenticationType;
+	private String companyServiceAccountTypeId;
+	private String secret;
 
-	@SneakyThrows
-    public String toJsonString() {
-        final ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(this);
-    }
-
+	private String subscriptionId;
 }

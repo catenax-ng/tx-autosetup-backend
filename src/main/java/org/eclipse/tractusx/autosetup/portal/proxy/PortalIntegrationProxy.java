@@ -26,6 +26,7 @@ import java.util.Map;
 import org.eclipse.tractusx.autosetup.model.KeycloakTokenResponse;
 import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultRequest;
 import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultResponse;
+import org.eclipse.tractusx.autosetup.portal.model.TechnicalUserDetails;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,23 +50,21 @@ public interface PortalIntegrationProxy {
 	public ServiceInstanceResultResponse postAppInstanceResultAndGetTenantSpecs(URI url,
 			@RequestHeader Map<String, String> header,
 			@RequestBody ServiceInstanceResultRequest serviceInstanceResultRequest);
-
-	@GetMapping("/api/apps/{appId}/subscription/{subscriptionId}/provider")
-	public JsonNode getAppInstanceResultAndGetTenantSpecs(URI url, @RequestHeader Map<String, String> header,
-			@PathVariable("appId") String appId, @PathVariable("subscriptionId") String subscriptionId);
-
-	@PostMapping("/api/Services/autoSetup")
-	public ServiceInstanceResultResponse postServiceInstanceResultAndGetTenantSpecs(URI url,
-			@RequestHeader Map<String, String> header,
+	
+	@PostMapping("/api/{appServiceURIPath}/start-autoSetup")
+	public JsonNode postAppServiceStartAutoSetup(URI url, @RequestHeader Map<String, String> header,
+			@PathVariable("appServiceURIPath") String appServiceURIPath,
 			@RequestBody ServiceInstanceResultRequest serviceInstanceResultRequest);
 
-	@GetMapping("/api/Services/{serviceId}/subscription/{subscriptionId}/provider")
-	public JsonNode getServiceInstanceResultAndGetTenantSpecs(URI url, @RequestHeader Map<String, String> header,
-			@PathVariable("serviceId") String serviceId, @PathVariable("subscriptionId") String subscriptionId);
+	@GetMapping("/api/{appServiceURIPath}/{appId}/subscription/{subscriptionId}/provider")
+	public ServiceInstanceResultResponse getAppServiceInstanceSubcriptionDetails(URI url,
+			@RequestHeader Map<String, String> header, @PathVariable("appServiceURIPath") String appServiceURIPath,
+			@PathVariable("appId") String appId, @PathVariable("subscriptionId") String subscriptionId);
 
-	@GetMapping("/api/administration/serviceaccount/owncompany/serviceaccounts/{offerSubscriptionId}")
-	public JsonNode getTechnicalUserDetails(URI url, @RequestHeader Map<String, String> header,
-			@PathVariable("offerSubscriptionId") String offerSubscriptionId);
+
+	@GetMapping("/api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId}")
+	public TechnicalUserDetails getTechnicalUserDetails(URI url, @RequestHeader Map<String, String> header,
+			@PathVariable("serviceAccountId") String serviceAccountId);
 
 	@PostMapping("/api/administration/connectors/managed")
 	public String manageConnector(URI url, @RequestHeader Map<String, String> header,
