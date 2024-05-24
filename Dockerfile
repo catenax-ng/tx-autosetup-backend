@@ -22,7 +22,6 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 
 RUN mkdir -p /app/legal
-WORKDIR /app
 
 # copy the project files
 COPY ./pom.xml /pom.xml
