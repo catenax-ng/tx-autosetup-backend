@@ -31,8 +31,8 @@ RUN mvn dependency:go-offline -B
 COPY ./src ./src
 
 # build for release
-# RUN mvn clean install -Dmaven.test.skip=true
-RUN mvn clean install -DskipTests
+RUN mvn clean install -Dmaven.test.skip=true
+RUN mkdir -p target/legal && (cd target/legal; jar -xf ../*.jar)
 
 FROM eclipse-temurin:17.0.11_9-jdk
 
@@ -57,6 +57,7 @@ WORKDIR /autosetup
 
 # copy over the built artifact from the maven image
 COPY --from=builder target/*.jar ./app.jar
+COPY --from=builder target/legal/META-INF legal/META-INF/.
 
 EXPOSE 9999
 # set the startup command to run your binary
