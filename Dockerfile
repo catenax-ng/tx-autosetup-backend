@@ -21,6 +21,9 @@
 # our base build image
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 
+RUN mkdir -p /app/legal
+WORKDIR /app
+
 # copy the project files
 COPY ./pom.xml /pom.xml
 
@@ -32,8 +35,9 @@ COPY ./src ./src
 
 # build for release
 RUN mvn clean install -Dmaven.test.skip=true
-RUN mkdir -p target/legal && (cd target/legal; jar -xf ../*.jar)
-RUN ls /target/legal/
+
+# Copy Legal information for distributions, the star ones are copied by workflow
+COPY NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/legal/
 
 FROM eclipse-temurin:17.0.11_9-jdk
 
@@ -58,7 +62,7 @@ WORKDIR /autosetup
 
 # copy over the built artifact from the maven image
 COPY --from=builder target/*.jar ./app.jar
-COPY --from=builder target/legal/META-INF legal/META-INF/.
+COPY --from=builder /app/legal/* /autosetup
 
 EXPOSE 9999
 # set the startup command to run your binary
