@@ -37,7 +37,7 @@ COPY ./src ./src
 RUN mvn clean install -Dmaven.test.skip=true
 
 # Copy Legal information for distributions, the star ones are copied by workflow
-COPY NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* /app/legal/
+COPY NOTICE.md SECURITY.md LICENSE DEPENDENCIES /app/legal/
 
 FROM eclipse-temurin:17.0.11_9-jdk
 
