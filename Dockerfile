@@ -33,6 +33,7 @@ COPY ./src ./src
 # build for release
 RUN mvn clean install -Dmaven.test.skip=true
 RUN mkdir -p target/legal && (cd target/legal; jar -xf ../*.jar)
+RUN ls /target/legal/
 
 FROM eclipse-temurin:17.0.11_9-jdk
 
