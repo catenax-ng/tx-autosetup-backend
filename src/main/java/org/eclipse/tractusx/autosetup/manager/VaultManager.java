@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2022, 2023 T-Systems International GmbH
- * Copyright (c) 2022, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022,2024 T-Systems International GmbH
+ * Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -50,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class VaultManager {
 
+	private static final String DIM_CLIENT_SECRET = "dim-client-secret";
 	private static final String CLIENT_SECRET = "client-secret";
 	private static final String V1_SECRET_DATA = "/v1/secret/data/";
 	public static final String ENCRYPTIONKEYS = "encryptionkeys";
@@ -101,6 +102,10 @@ public class VaultManager {
 			tenantVaultSecret = new HashMap<>();
 			tenantVaultSecret.put(CONTENT, "c3RhbmRhcmRfZW5jX2tleQo=");
 			uploadSecrete(tenantNameNamespace, ENCRYPTIONKEYS, tenantVaultSecret);
+			
+			tenantVaultSecret = new HashMap<>();
+			tenantVaultSecret.put(CONTENT, inputData.get("dimClientSecret"));
+			uploadSecrete(tenantNameNamespace, DIM_CLIENT_SECRET, tenantVaultSecret);
 
 			inputData.put(DAPS_CERT, DAPS_CERT);
 			inputData.put(CERTIFICATE_PRIVATE_KEY, CERTIFICATE_PRIVATE_KEY);
@@ -112,6 +117,7 @@ public class VaultManager {
 			inputData.put(ENCRYPTIONKEYS, ENCRYPTIONKEYS);
 			inputData.put("certificate-data-plane-private-key", CERTIFICATE_PRIVATE_KEY);
 			inputData.put("certificate-data-plane-public-key", CERTIFICATE_PRIVATE_KEY);
+			inputData.put(DIM_CLIENT_SECRET, DIM_CLIENT_SECRET);
 
 			autoSetupTriggerDetails.setStatus(TriggerStatusEnum.SUCCESS.name());
 			log.info(LogUtil.encode(orgName) + "-" + LogUtil.encode(packageName) + "-Vault created");

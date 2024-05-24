@@ -32,5 +32,7 @@ public class ConnectorTestRequest {
 	private String apiKeyHeader;
 
 	private String apiKeyValue;
+	
+	private String connectorId;
 
 }

@@ -22,6 +22,7 @@ package org.eclipse.tractusx.autosetup.manager;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,11 +32,13 @@ import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerDetails;
 import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerEntry;
 import org.eclipse.tractusx.autosetup.exception.NoDataFoundException;
 import org.eclipse.tractusx.autosetup.exception.ServiceException;
+import org.eclipse.tractusx.autosetup.exception.ValidationException;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
 import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultRequest;
 import org.eclipse.tractusx.autosetup.portal.model.ServiceInstanceResultResponse;
 import org.eclipse.tractusx.autosetup.portal.model.TechnicalUserDetails;
+import org.eclipse.tractusx.autosetup.portal.model.TechnicalUsers;
 import org.eclipse.tractusx.autosetup.portal.proxy.PortalIntegrationProxy;
 import org.eclipse.tractusx.autosetup.utility.KeyCloakTokenProxyUtitlity;
 import org.eclipse.tractusx.autosetup.utility.LogUtil;
@@ -55,6 +58,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PortalIntegrationManager {
 
+	private static final String AUTHORIZATION = "Authorization";
+
+	private static final String BEARER = "Bearer ";
+
 	private static final String ACTIVE = "ACTIVE";
 
 	private final PortalIntegrationProxy portalIntegrationProxy;
@@ -62,7 +69,7 @@ public class PortalIntegrationManager {
 	private final AutoSetupTriggerManager autoSetupTriggerManager;
 
 	private final KeyCloakTokenProxyUtitlity keyCloakTokenProxyUtitlity;
-
+	
 	@Value("${portal.url}")
 	private URI portalUrl;
 
@@ -74,6 +81,9 @@ public class PortalIntegrationManager {
 
 	@Value("${portal.keycloak.tokenURI}")
 	private URI tokenURI;
+
+	@Value("${portal.request.timeout:20000}")
+	private int requestTimeout;
 
 	@Retryable(retryFor = {
 			ServiceException.class }, maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "#{${retry.backOffDelay}}"))
@@ -104,8 +114,8 @@ public class PortalIntegrationManager {
 			inputData.put("applicationURL", applicationURL);
 
 			Map<String, String> header = new HashMap<>();
-			header.put("Authorization",
-					"Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
+			header.put(AUTHORIZATION,
+					BEARER + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
 			ServiceInstanceResultRequest serviceInstanceResultRequest = ServiceInstanceResultRequest.builder()
 					.requestId(subscriptionId).offerUrl(applicationURL).build();
@@ -113,36 +123,21 @@ public class PortalIntegrationManager {
 			serviceInstanceResultResponse = processAppServiceGetResponse(subscriptionId, offerId, header,
 					serviceInstanceResultRequest, appServiceURIPath);
 
-			if (serviceInstanceResultResponse != null) {
+			handlePortalServiceExcutionResponse(inputData, autoSetupTriggerDetails, serviceInstanceResultResponse);
 
-				inputData.put("keycloakResourceClient", serviceInstanceResultResponse.getAppInstanceId());
+			log.info(LogUtil.encode(tenantName) + "-" + LogUtil.encode(packageName)
+					+ "-PostServiceInstanceResultAndGetTenantSpecs created");
 
-				autoSetupTriggerDetails.setRemark(serviceInstanceResultResponse.toJsonString());
-
-				if (serviceInstanceResultResponse.getTechnicalUserData() != null
-						&& !serviceInstanceResultResponse.getTechnicalUserData().isEmpty()) {
-					TechnicalUserDetails technicalUserDetails = serviceInstanceResultResponse.getTechnicalUserData()
-							.get(0).getTechnicalUserDetails();
-					inputData.put("keycloakAuthenticationClientId", technicalUserDetails.getClientId());
-					inputData.put("keycloakAuthenticationClientSecret", technicalUserDetails.getSecret());
-				} else {
-					throw new NoDataFoundException("Technical user details not found recieved from Portal");
-				}
-
-				log.info(LogUtil.encode(tenantName) + "-" + LogUtil.encode(packageName)
-						+ "-PostServiceInstanceResultAndGetTenantSpecs created");
-
-			} else {
-				throw new NoDataFoundException("Error in request process with portal");
-			}
 		} catch (NoDataFoundException e) {
-			log.error("PortalIntegrationManager NoDataFoundException failed retry attempt: : " + e.getMessage());
+			log.error(LogUtil.encode(
+					"PortalIntegrationManager NoDataFoundException failed No retry attempt: : " + e.getMessage()));
+			throw e;
 		} catch (FeignException e) {
 
-			log.error("PortalIntegrationManager FeignException failed retry attempt: : {}",
-					RetrySynchronizationManager.getContext().getRetryCount() + 1);
-			log.error("RequestBody: " + e.request());
-			log.error("ResponseBody: " + e.contentUTF8());
+			log.error(LogUtil.encode("PortalIntegrationManager FeignException failed retry attempt: : "
+					+ RetrySynchronizationManager.getContext().getRetryCount() + 1));
+			log.error(LogUtil.encode("RequestBody: " + e.request()));
+			log.error(LogUtil.encode("ResponseBody: " + e.contentUTF8()));
 
 			autoSetupTriggerDetails.setStatus(TriggerStatusEnum.FAILED.name());
 			autoSetupTriggerDetails.setRemark(e.contentUTF8());
@@ -150,8 +145,8 @@ public class PortalIntegrationManager {
 
 		} catch (Exception ex) {
 
-			log.error("PortalIntegrationManager Exception failed retry attempt: : {}",
-					RetrySynchronizationManager.getContext().getRetryCount() + 1);
+			log.error(LogUtil.encode("PortalIntegrationManager Exception failed retry attempt: : "
+					+ RetrySynchronizationManager.getContext().getRetryCount() + 1));
 
 			if (serviceInstanceResultResponse != null) {
 				String msg = "PortalIntegrationManager failed with details:"
@@ -168,6 +163,46 @@ public class PortalIntegrationManager {
 			autoSetupTriggerManager.saveTriggerDetails(autoSetupTriggerDetails, triger);
 		}
 		return inputData;
+	}
+
+	@SneakyThrows
+	private void handlePortalServiceExcutionResponse(Map<String, String> inputData,
+			AutoSetupTriggerDetails autoSetupTriggerDetails,
+			ServiceInstanceResultResponse serviceInstanceResultResponse) {
+
+		if (serviceInstanceResultResponse != null) {
+
+			inputData.put("keycloakResourceClient", serviceInstanceResultResponse.getAppInstanceId());
+
+			autoSetupTriggerDetails.setRemark(serviceInstanceResultResponse.toJsonString());
+
+			List<TechnicalUsers> technicalUserData = serviceInstanceResultResponse.getTechnicalUserData();
+
+			if (technicalUserData != null && !technicalUserData.isEmpty()) {
+
+				if (technicalUserData.size() > 2) {
+					throw new ValidationException("We have recieved more than two tehcnical users from portal");
+				}
+
+				technicalUserData.forEach(technicalUser -> {
+					TechnicalUserDetails technicalUserDetails = technicalUser.getTechnicalUserDetails();
+					if (technicalUser.getName().contains("dim")
+							&& technicalUser.getPermissions().contains("Identity Wallet Management")) {
+						inputData.put("dimClientId", technicalUserDetails.getClientId());
+						inputData.put("dimClientSecret", technicalUserDetails.getSecret());
+					} else {
+						inputData.put("keycloakAuthenticationClientId", technicalUserDetails.getClientId());
+						inputData.put("keycloakAuthenticationClientSecret", technicalUserDetails.getSecret());
+					}
+				});
+
+			} else {
+				throw new NoDataFoundException("Technical users is null or empty recieved from Portal");
+			}
+		} else {
+			throw new NoDataFoundException("Error in request process with portal");
+		}
+
 	}
 
 	@SneakyThrows
@@ -209,11 +244,12 @@ public class PortalIntegrationManager {
 		ServiceInstanceResultResponse serviceInstanceResultResponse = null;
 		String offerSubscriptionStatus = null;
 		do {
-			Thread.sleep(20000);
+			log.info("Waiting '" + requestTimeout + "'sec to portal /provider API call to get subcription status");
+			Thread.sleep(requestTimeout);
 			try {
 
-				header.put("Authorization",
-						"Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
+				header.put(AUTHORIZATION,
+						BEARER + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
 				serviceInstanceResultResponse = portalIntegrationProxy.getAppServiceInstanceSubcriptionDetails(
 						portalUrl, header, appServiceURIPath, offerId, subscriptionId);
@@ -256,8 +292,8 @@ public class PortalIntegrationManager {
 
 		if (serviceInstanceResultResponse.getTechnicalUserData() != null) {
 
-			header.put("Authorization",
-					"Bearer " + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
+			header.put(AUTHORIZATION,
+					BEARER + keyCloakTokenProxyUtitlity.getKeycloakToken(clientId, clientSecret, tokenURI));
 
 			serviceInstanceResultResponse.getTechnicalUserData().forEach(elel -> {
 				try {
@@ -268,10 +304,16 @@ public class PortalIntegrationManager {
 					log.error("ReadTechnicalUserDetails FeignException request: " + e.request());
 					log.error("ReadTechnicalUserDetails FeignException response Body: " + e.responseBody());
 					String error = e.contentUTF8();
-					error = StringUtils.isAllEmpty(error) ? error : e.getMessage();
+					error = StringUtils.isNotBlank(error) ? error : e.getMessage();
 					log.error("ReadTechnicalUserDetails FeignException Exception response: " + error);
+					if (e.status() == 409)
+						throw new NoDataFoundException(error);
+					else
+						throw new ServiceException(error);
 				} catch (Exception e) {
-					log.error("Error in read existing TechnicalUserDetails from portal " + e.getMessage());
+					String error = "Error in read existing TechnicalUserDetails from portal " + e.getMessage();
+					log.error(error);
+					throw new ServiceException(error);
 				}
 			});
 		}
