@@ -56,14 +56,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-    # Copy legal information from root dir to backend dir for publishing
-
-      - name: Copy and paste legal information
-        run: |
-          cp ./DEPENDENCIES DEPENDENCIES
-          cp ./LICENSE LICENSE
-          cp ./NOTICE.md NOTICE.md
-          cp ./SECURITY.md SECURITY.md
       # Create SemVer or ref tags dependent of trigger event
       - name: Docker meta
         id: meta
