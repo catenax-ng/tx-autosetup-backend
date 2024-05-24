@@ -288,9 +288,6 @@
 	<build>
 		<resources>
 			<resource>
-				<directory>${project.basedir}/src/main/resources</directory>
-			</resource>
-			<resource>
 				<directory>${project.basedir}</directory>
 				<includes>
 					<include>LICENSE</include>
@@ -298,6 +295,9 @@
 					<include>DEPENDENCIES</include>
 				</includes>
 				<targetPath>META-INF/</targetPath>
+			</resource>
+			<resource>
+				<directory>${project.basedir}/src/main/resources</directory>
 			</resource>
 		</resources>
 		<plugins>
