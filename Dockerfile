@@ -21,22 +21,14 @@
 # our base build image
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 
-RUN mkdir -p /app/legal
-
 # copy the project files
-COPY ./pom.xml /pom.xml
+COPY ./* /
 
 # build all dependencies
 RUN mvn dependency:go-offline -B 
 
-# copy your other files
-COPY ./src ./src
-
 # build for release
 RUN mvn clean install -Dmaven.test.skip=true
-
-# Copy Legal information for distributions, the star ones are copied by workflow
-COPY NOTICE.md SECURITY.md LICENSE DEPENDENCIES /app/legal/
 
 FROM eclipse-temurin:17.0.11_9-jdk
 
@@ -55,13 +47,12 @@ RUN adduser \
     --uid "$UID" \
     "$USER"
 
-USER $USERNAME
+USER $USER
 
 WORKDIR /autosetup
 
 # copy over the built artifact from the maven image
 COPY --from=builder target/*.jar ./app.jar
-COPY --from=builder /app/legal/* /autosetup
 
 EXPOSE 9999
 # set the startup command to run your binary
