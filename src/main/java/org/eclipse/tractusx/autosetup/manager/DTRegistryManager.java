@@ -23,12 +23,10 @@ package org.eclipse.tractusx.autosetup.manager;
 
 import static org.eclipse.tractusx.autosetup.constant.AppNameConstant.DT_REGISTRY;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.tractusx.autosetup.apiproxy.EDCProxyService;
 import org.eclipse.tractusx.autosetup.constant.AppActions;
 import org.eclipse.tractusx.autosetup.constant.SDEConfigurationProperty;
 import org.eclipse.tractusx.autosetup.constant.TriggerStatusEnum;
@@ -37,8 +35,6 @@ import org.eclipse.tractusx.autosetup.entity.AutoSetupTriggerEntry;
 import org.eclipse.tractusx.autosetup.exception.ServiceException;
 import org.eclipse.tractusx.autosetup.model.Customer;
 import org.eclipse.tractusx.autosetup.model.SelectedTools;
-import org.eclipse.tractusx.autosetup.utility.LogUtil;
-import org.eclipse.tractusx.autosetup.utility.WaitingTimeUtility;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -59,8 +55,6 @@ public class DTRegistryManager {
 
 	private final SDEConfigurationProperty sDEConfigurationProperty;
 
-	private final EDCProxyService eDCProxyService;
-
 	@Value("${managed.dt-registry.local:true}")
 	private boolean managedDTRegistryLocal;
 
@@ -78,7 +72,7 @@ public class DTRegistryManager {
 			String dnsNameURLProtocol = inputData.get("dnsNameURLProtocol");
 
 			String dturi = sDEConfigurationProperty.getDtregistryApiUri();
-			dturi = StringUtils.isAllEmpty(dturi) ? "/api/v3" : dturi;
+			dturi = StringUtils.isBlank(dturi) ? "/api/v3" : dturi;
 			if (managedDTRegistryLocal) {
 				String appName = DT_REGISTRY.name().replace("_", "");
 				String localDTUrl = "http://cx-" + packageName + "-" + appName.toLowerCase() + "-registry-svc:8080";
