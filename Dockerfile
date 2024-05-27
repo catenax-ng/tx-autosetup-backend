@@ -22,7 +22,9 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 
 # copy the project files
-COPY ./* /
+COPY . /autosetup/
+
+WORKDIR /autosetup
 
 # build all dependencies
 RUN mvn dependency:go-offline -B 
