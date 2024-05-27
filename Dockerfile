@@ -51,7 +51,7 @@ RUN adduser \
 
 USER $USER
 
-WORKDIR /autosetup
+WORKDIR /
 
 # copy over the built artifact from the maven image
 COPY --from=builder target/*.jar ./app.jar
