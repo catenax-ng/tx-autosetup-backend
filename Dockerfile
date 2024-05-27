@@ -54,7 +54,7 @@ USER $USER
 WORKDIR /
 
 # copy over the built artifact from the maven image
-COPY --from=builder target/*.jar ./app.jar
+COPY --from=builder /autosetup/target/*.jar ./app.jar
 
 EXPOSE 9999
 # set the startup command to run your binary
