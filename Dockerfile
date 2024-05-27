@@ -22,7 +22,7 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 
 # copy the project files
-COPY ./pom.xml /pom.xml
+COPY ./pom.xml /autosetup/pom.xml
 
 WORKDIR /autosetup
 
