@@ -24,7 +24,7 @@ on:
   push:
     paths:
       - 'charts/**'
-    branches: [main]
+    branches: [closeRelease]
   pull_request:
     paths:
       - 'charts/**'
