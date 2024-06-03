@@ -122,8 +122,11 @@ postgresql:
     containerSecurityContext:
       enabled: false
   auth:
-    username: ""
-    database: ""
+    username: "testuser"
+    password: ""
+    postgresPassword: ""
+    database: "testdb"
+    port: 5432
     existingSecret: ""
     secretKeys:
       adminPasswordKey: ""

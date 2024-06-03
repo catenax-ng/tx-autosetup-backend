@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2022, 2023 T-Systems International GmbH
- * Copyright (c) 2022, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022,2024 T-Systems International GmbH
+ * Copyright (c) 2022,2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -139,6 +139,10 @@ public class SDEManager {
 			inputData.put("emailCC", emailConfigurationProperty.getReplytoAddress());
 			inputData.put("emailFrom", customerDetails.getOrganizationName() +" SDE notification<noreply@sde.com>");
 			inputData.put("emailReply", emailConfigurationProperty.getReplytoAddress());
+			
+			inputData.put("bpdm.provider.edc.dataspace.api", sDEConfigurationProperty.getBpdmProviderEdcDataspaceApi());
+			inputData.put("bpdm.provider.bpnl", sDEConfigurationProperty.getBpdmProviderBpnl());
+			inputData.put("bpdm.provider.edc.public.api", sDEConfigurationProperty.getBpdmProviderEdcPublicApi());
 
 			String packageName = tool.getLabel();
 
