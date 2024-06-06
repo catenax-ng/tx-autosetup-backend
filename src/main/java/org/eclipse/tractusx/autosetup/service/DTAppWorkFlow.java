@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2023 T-Systems International GmbH
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023,2024 T-Systems International GmbH
+ * Copyright (c) 2023,2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -34,11 +34,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class DTAppWorkFlow {
 
 	private final DTRegistryManager dtregistryManager;
@@ -52,16 +50,6 @@ public class DTAppWorkFlow {
 
 		inputConfiguration.putAll(
 				dtregistryManager.managePackage(customerDetails, workflowAction, tool, inputConfiguration, triger));
-
-		if (!manualUpdate) {
-			try {
-				dtregistryManager.dtRegistryRegistrationInEDC(customerDetails, tool, inputConfiguration, triger);
-			} catch (Exception e) {
-				String errorMsg = "Unable to complete asset creation in managed DT registry, autosetup process not aborting "
-						+ e.getMessage();
-				log.error(errorMsg);
-			}
-		}
 
 		return inputConfiguration;
 	}
